@@ -51,9 +51,19 @@ func VerifyUser(w http.ResponseWriter, r *http.Request) {
 	// Obter a coleção de usuários
 	collection := db.GetCollection(client, "clarion", "user")
 
+	filter := bson.D{
+		{Key: "$or", Value: bson.A{
+			bson.D{{Key: "username", Value: user.Username}},
+			bson.D{{Key: "email", Value: user.Email}},
+		}},
+	}
+
 	// Verificar se o usuário existe no banco
 	var result bson.M
-	err = collection.FindOne(context.Background(), bson.D{{Key: "username", Value: user.Username}}).Decode(&result)
+	err = collection.FindOne(context.Background(), filter).Decode(&result)
+	if err != nil {
+		log.Fatal(err)
+	}
 	if err == mongo.ErrNoDocuments {
 		http.Error(w, "Usuário não encontrado", http.StatusUnauthorized)
 		return
@@ -98,20 +108,24 @@ func VerifyUser(w http.ResponseWriter, r *http.Request) {
 
 // Função para validar o token JWT
 func ValidateToken(w http.ResponseWriter, r *http.Request) {
-	// Obter o token do cabeçalho da requisição
+	// Recuperar o token do cabeçalho 'Authorization'
 	tokenString := r.Header.Get("Authorization")
 	if tokenString == "" {
 		http.Error(w, "Token não fornecido", http.StatusUnauthorized)
 		return
 	}
 
-	// Verificar e validar o token
+	// Remover o prefixo 'Bearer ' caso esteja presente
+	if len(tokenString) > 7 && tokenString[:7] == "Bearer " {
+		tokenString = tokenString[7:]
+	}
+
+	// Parse e validação do token JWT
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		// Validar o método de assinatura
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Método de assinatura inválido")
 		}
-		return jwtKey, nil
+		return jwtKey, nil // jwtKey é a chave secreta para validação
 	})
 
 	if err != nil {
@@ -122,7 +136,11 @@ func ValidateToken(w http.ResponseWriter, r *http.Request) {
 	// Validar o token
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		fmt.Println("Token válido. Usuário:", claims["username"])
-		w.Write([]byte("Token válido"))
+
+		// Enviar uma resposta com o status de sucesso e a mensagem "Token válido"
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK) // Código 200 OK
+		json.NewEncoder(w).Encode(map[string]string{"message": "Token válido"})
 	} else {
 		http.Error(w, "Token inválido", http.StatusUnauthorized)
 	}

@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+
+	"github.com/rs/cors"
 )
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
@@ -22,11 +24,19 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+
+	c := cors.New(cors.Options{
+		AllowedOrigins: []string{"http://localhost:59745"}, // Permitindo o domínio de onde vem a requisição
+		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders: []string{"Content-Type", "Authorization"},
+	})
 	// Configura as rotas para autenticação e validação de token
-	http.HandleFunc("/login", auth.VerifyUser) // Rota de login (gera o JWT)
-	// http.HandleFunc("/validate", auth.ValidateToken) // Rota de validação do token
+	http.HandleFunc("/login", auth.VerifyUser)       // Rota de login (gera o JWT)
+	http.HandleFunc("/validate", auth.ValidateToken) // Rota de validação do token
 
 	http.HandleFunc("/teste", loginHandler)
+
+	handler := c.Handler(http.DefaultServeMux)
 
 	// http.HandleFunc("/createUser", auth.createUser) // Rota de validação do token
 
@@ -34,5 +44,5 @@ func main() {
 
 	// Inicia o servidor na porta 8080
 	log.Println("Servidor rodando na porta 8080...")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Fatal(http.ListenAndServe(":8080", handler))
 }
