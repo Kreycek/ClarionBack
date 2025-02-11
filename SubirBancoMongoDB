@@ -1,0 +1,3 @@
+1) docker run -d  --name clarion -p 27017:27017 -v clarionMongoDB:/data/db -e MONGO_INITDB_ROOT_USERNAME=admin -e MONGO_INITDB_ROOT_PASSWORD=secret mongo:latest
+2) Cuidado com o caminho clarionMongoDB:/data/db, procure não trocar ou retirar a parte /data/db pois esse que o docker usa para gravar os dados do container
+3) Se quiser entrar diretamente no mongo DB via linha de comando digitar docker exec -it nomeContainer mongosh -u usuario -p senha
