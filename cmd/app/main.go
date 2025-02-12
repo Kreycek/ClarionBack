@@ -2,6 +2,7 @@ package main
 
 import (
 	"Clarion/internal/auth"
+	"Clarion/internal/users"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -26,13 +27,14 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 func main() {
 
 	c := cors.New(cors.Options{
-		AllowedOrigins: []string{"http://localhost:59745"}, // Permitindo o domínio de onde vem a requisição
+		AllowedOrigins: []string{"http://localhost:63941"}, // Permitindo o domínio de onde vem a requisição
 		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders: []string{"Content-Type", "Authorization"},
 	})
 	// Configura as rotas para autenticação e validação de token
 	http.HandleFunc("/login", auth.VerifyUser)       // Rota de login (gera o JWT)
 	http.HandleFunc("/validate", auth.ValidateToken) // Rota de validação do token
+	http.HandleFunc("/users", users.GetAllUsersHandler)
 
 	http.HandleFunc("/teste", loginHandler)
 
