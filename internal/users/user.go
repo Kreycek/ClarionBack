@@ -53,3 +53,19 @@ func GetAllUsers(client *mongo.Client, dbName, collectionName string) ([]any, er
 	// Retorna os usuários
 	return users, nil
 }
+
+// Função para inserir um usuário na coleção "user"
+func InsertUser(client *mongo.Client, dbName, collectionName string, user models.User) error {
+	collection := client.Database(dbName).Collection(collectionName)
+
+	// Criar um contexto para a operação de inserção
+	ctx := context.Background()
+
+	// Inserir o documento
+	_, err := collection.InsertOne(ctx, user)
+	if err != nil {
+		return fmt.Errorf("erro ao inserir usuário: %v", err)
+	}
+
+	return nil
+}
