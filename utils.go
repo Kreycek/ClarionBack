@@ -2,6 +2,7 @@
 package clarion
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
@@ -12,7 +13,7 @@ import (
 // Variável global que contém a chave secreta para JWT
 var SecretKey = []byte("my_secret_key")
 
-var UrlSite = "http://localhost:50574"
+var UrlSite = "http://localhost:4200"
 
 var ConectionString = "mongodb://admin:secret@localhost:27017"
 
@@ -59,4 +60,15 @@ func ValidateToken(tokenString string) (*jwt.Token, error) {
 		return nil, err
 	}
 	return token, nil
+}
+
+func FormataRetornoHTTP(w http.ResponseWriter, mensagem any, codHttp int) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(codHttp) // Código 200 OK
+	return json.NewEncoder(w).Encode(map[string]any{"message": mensagem})
+}
+func FormataRetornoHTTPGeneric(w http.ResponseWriter, bodyName string, body any, codHttp int) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(codHttp) // Código 200 OK
+	return json.NewEncoder(w).Encode(map[any]any{"users": body})
 }

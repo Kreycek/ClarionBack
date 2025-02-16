@@ -36,12 +36,14 @@ func main() {
 	// Configura as rotas para autenticação e validação de token
 	http.HandleFunc("/login", auth.VerifyUser)       // Rota de login (gera o JWT)
 	http.HandleFunc("/validate", auth.ValidateToken) // Rota de validação do token
-	http.HandleFunc("/getAllUsers", users.GetAllUsersHandler)
 	http.HandleFunc("/getPerfis", perfil.GetAllPerfilsHandler)
 	http.HandleFunc("/addUser", users.InsertUserHandler)
-
+	http.HandleFunc("/getAllUsers", users.GetAllUsersHandler)
+	http.HandleFunc("/verifyExistUser", users.VerifyExistUser)
+	http.HandleFunc("/searchUsers", users.SearchUsersHandler)
+	http.HandleFunc("/getUserById", users.GetUserByIdHandler)
+	http.HandleFunc("/updateUser", users.UpdateUserHandler)
 	http.HandleFunc("/teste", loginHandler)
-
 	handler := c.Handler(http.DefaultServeMux)
 
 	// http.HandleFunc("/createUser", auth.createUser) // Rota de validação do token

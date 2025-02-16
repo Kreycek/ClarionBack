@@ -5,12 +5,115 @@ import (
 	"Clarion/internal/models"
 	"context"
 	"fmt"
+	"log"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // Modelo de Usuário com campos do MongoDB
+
+func GetUserByID(client *mongo.Client, dbName, collectionName, userID string) (map[string]any, error) {
+	collection := client.Database(dbName).Collection(collectionName)
+
+	// Criar filtro para buscar um usuário pelo ID
+	fmt.Println("id", userID)
+
+	objectID, erroId := primitive.ObjectIDFromHex(userID)
+	if erroId != nil {
+		log.Fatalf("Erro ao converter string para ObjectID: %v", erroId)
+	}
+
+	filter := bson.M{"_id": objectID}
+
+	// Variável para armazenar o usuário retornado
+	var user models.User
+
+	// Usar FindOne para pegar apenas um único registro
+	err := collection.FindOne(context.Background(), filter).Decode(&user)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, fmt.Errorf("usuário não encontrado")
+		}
+		return nil, fmt.Errorf("erro ao buscar usuário: %v", err)
+	}
+
+	// Converter o _id para string
+	userID = user.ID.Hex()
+
+	// Retornar o usuário como um mapa
+	userData := map[string]any{
+		"ID":             userID, // Agora o campo ID é uma string
+		"Name":           user.Name,
+		"LastName":       user.LastName,
+		"Email":          user.Email,
+		"PassportNumber": user.PassportNumber,
+		"Perfil":         user.Perfil,
+		"Username":       user.Username,
+	}
+
+	fmt.Println("userData", userData)
+
+	return userData, nil
+}
+
+func SearchUsers(client *mongo.Client, dbName, collectionName string, name, email *string, perfis []int) ([]any, error) {
+	collection := client.Database(dbName).Collection(collectionName)
+
+	// Criando o filtro dinâmico
+	fmt.Println("*name", *name)
+	filter := bson.M{}
+	if name != nil && *name != "" {
+		fmt.Println("name", name)
+		filter["name"] = bson.M{"$regex": *name, "$options": "i"}
+	}
+	if email != nil && *email != "" {
+		filter["email"] = bson.M{"$regex": *email, "$options": "i"}
+	}
+	if len(perfis) > 0 {
+		fmt.Println("perfil", perfis)
+		filter["perfil"] = bson.M{"$in": perfis} // Busca usuários que tenham pelo menos um dos perfis informados
+	}
+
+	// Executa a consulta no MongoDB
+	cursor, err := collection.Find(context.Background(), filter)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(context.Background())
+
+	// Converte os resultados em uma slice de usuários
+	var users []any
+	for cursor.Next(context.Background()) {
+		var user models.User
+		if err := cursor.Decode(&user); err != nil {
+			return nil, fmt.Errorf("erro ao decodificar usuário: %v", err)
+		}
+
+		// Converter o _id do MongoDB para string para retorno
+		userID := user.ID
+		// Preenche o usuário com o ID convertido em string
+		users = append(users, map[string]any{
+			"ID":             userID, // Agora o campo ID é uma string
+			"Name":           user.Name,
+			"LastName":       user.LastName,
+			"Email":          user.Email,
+			"PassportNumber": user.PassportNumber,
+			"Perfil":         user.Perfil,
+			"Username":       user.Username,
+		})
+
+	}
+
+	// var users []models.User
+	// if err = cursor.All(context.Background(), &users); err != nil {
+	// 	return nil, err
+	// }
+
+	return users, nil
+}
 
 // Função para obter todos os usuários do banco de dados
 func GetAllUsers(client *mongo.Client, dbName, collectionName string) ([]any, error) {
@@ -68,4 +171,47 @@ func InsertUser(client *mongo.Client, dbName, collectionName string, user models
 	}
 
 	return nil
+}
+
+func updateUser(client *mongo.Client, dbName, collectionName string, user models.User) {
+	// Conectar à coleção
+	collection := client.Database(dbName).Collection(collectionName)
+
+	// Verifica se o ID é válido
+	if user.ID.IsZero() {
+
+		return
+	}
+
+	update := bson.M{
+		"$set": bson.M{
+			"name":           user.Name,
+			"lastName":       user.LastName,
+			"passportNumber": user.PassportNumber,
+			"perfil":         user.Perfil,
+		},
+	}
+
+	// Se uma nova senha for fornecida, gerar um hash
+	if user.Password != "" {
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+		if err != nil {
+			log.Println("Erro ao gerar hash da senha:", err)
+			return
+		}
+		hashedPasswordStr := string(hashedPassword)
+		update["password"] = hashedPasswordStr
+	}
+
+	// Criando o objeto de atualização
+
+	// Atualiza o documento no MongoDB
+	result, err := collection.UpdateOne(context.Background(), bson.M{"_id": user.ID}, update)
+	if err != nil {
+
+		return
+	}
+
+	// Exibir o número de documentos modificados
+	fmt.Printf("Documentos modificados: %v\n", result.ModifiedCount)
 }

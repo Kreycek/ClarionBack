@@ -3,6 +3,7 @@ package auth
 import (
 	clarion "Clarion"
 	"Clarion/internal/db"
+	"Clarion/internal/models"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -15,29 +16,12 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type User struct {
-	Id             string `json:"id"`
-	Username       string `json:"username"`
-	Password       string `json:"password"`
-	Name           string `json:"name"`
-	LastName       string `json:"lastName"`
-	Email          string `json:"email"`
-	PassportNumber string `json:"passportNumber"`
-	Perfil         []int  `json:"perfil"`
-}
-
-func formataRetornoHTTP(w http.ResponseWriter, mensagem string, codHttp int) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(codHttp) // Código 200 OK
-	return json.NewEncoder(w).Encode(map[string]string{"message": mensagem})
-}
-
 // Variáveis globais
 
 // Função para verificar o nome de usuário e senha
 func VerifyUser(w http.ResponseWriter, r *http.Request) {
 	// Parse o corpo da requisição
-	var user User
+	var user models.User
 	err := json.NewDecoder(r.Body).Decode(&user)
 	if err != nil {
 		http.Error(w, "Erro ao ler o corpo da requisição", http.StatusBadRequest)
@@ -66,12 +50,12 @@ func VerifyUser(w http.ResponseWriter, r *http.Request) {
 	var result bson.M
 	err = collection.FindOne(context.Background(), filter).Decode(&result)
 	if err != nil {
-		formataRetornoHTTP(w, "Erro geral", http.StatusUnauthorized)
+		clarion.FormataRetornoHTTP(w, "Erro geral", http.StatusUnauthorized)
 		return
 		// log.Fatal(err)
 	}
 	if err == mongo.ErrNoDocuments {
-		formataRetornoHTTP(w, "Usuário não encontrado", http.StatusUnauthorized)
+		clarion.FormataRetornoHTTP(w, "Usuário não encontrado", http.StatusUnauthorized)
 		// http.Error(w, "Usuário não encontrado", http.StatusUnauthorized)
 		return
 	}
@@ -83,7 +67,7 @@ func VerifyUser(w http.ResponseWriter, r *http.Request) {
 	// Comparar a senha fornecida com a senha armazenada no banco de dados
 	storedPassword, ok := result["password"].(string)
 	if !ok {
-		formataRetornoHTTP(w, "Erro na senha armazenada", http.StatusUnauthorized)
+		clarion.FormataRetornoHTTP(w, "Erro na senha armazenada", http.StatusUnauthorized)
 		// http.Error(w, "Erro na senha armazenada", http.StatusInternalServerError)
 		return
 	}
@@ -91,7 +75,7 @@ func VerifyUser(w http.ResponseWriter, r *http.Request) {
 	// Verificar se a senha fornecida corresponde à senha armazenada
 	err = bcrypt.CompareHashAndPassword([]byte(storedPassword), []byte(user.Password))
 	if err != nil {
-		formataRetornoHTTP(w, "Senha incorreta", http.StatusUnauthorized)
+		clarion.FormataRetornoHTTP(w, "Senha incorreta", http.StatusUnauthorized)
 		// http.Error(w, "Senha incorreta", http.StatusUnauthorized)
 		return
 	}
@@ -105,7 +89,7 @@ func VerifyUser(w http.ResponseWriter, r *http.Request) {
 	// Criar o token
 	tokenString, err := token.SignedString(clarion.SecretKey)
 	if err != nil {
-		formataRetornoHTTP(w, "Erro ao criar o token", 401)
+		clarion.FormataRetornoHTTP(w, "Erro ao criar o token", 401)
 		// http.Error(w, "Erro ao criar o token", http.StatusInternalServerError)
 		return
 	}
@@ -121,7 +105,7 @@ func ValidateToken(w http.ResponseWriter, r *http.Request) {
 	// Recuperar o token do cabeçalho 'Authorization'
 	tokenString := r.Header.Get("Authorization")
 	if tokenString == "" {
-		formataRetornoHTTP(w, "Token não fornecido", http.StatusUnauthorized)
+		clarion.FormataRetornoHTTP(w, "Token não fornecido", http.StatusUnauthorized)
 		// http.Error(w, "Token não fornecido", http.StatusUnauthorized)
 		return
 	}
@@ -151,7 +135,7 @@ func ValidateToken(w http.ResponseWriter, r *http.Request) {
 
 		// Enviar uma resposta com o status de sucesso e a mensagem "Token válido"
 
-		formataRetornoHTTP(w, "Token válido", http.StatusOK)
+		clarion.FormataRetornoHTTP(w, "Token válido", http.StatusOK)
 	} else {
 		http.Error(w, "Token inválido", http.StatusUnauthorized)
 	}
