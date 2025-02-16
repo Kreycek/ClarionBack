@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -57,15 +58,6 @@ func InsertUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// var user models.User2
-	// adas := json.NewDecoder(r.Body).Decode(&user)
-	// fmt.Println(adas)
-	// if adas != nil {
-	// 	fmt.Println(w, "erro ao decodificar corpo da requisição", http.StatusBadRequest)
-	// 	return
-	// }
-	// fmt.Println("AASAS", adas)
-
 	// Ler o corpo da requisição
 	var user models.User
 	err := json.NewDecoder(r.Body).Decode(&user)
@@ -74,6 +66,13 @@ func InsertUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if user.Active == false {
+		user.Active = true
+	}
+
+	if user.CreatedAt.IsZero() {
+		user.CreatedAt = time.Now()
+	}
 	// Conectar ao MongoDB
 	client, err := db.ConnectMongoDB(clarion.ConectionString)
 	if err != nil {
@@ -296,6 +295,10 @@ func UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if user.UpdatedAt.IsZero() {
+		user.UpdatedAt = time.Now()
+	}
+
 	// Criar o objeto de atualização
 	update := bson.M{
 		"$set": bson.M{
@@ -303,6 +306,9 @@ func UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
 			"lastName":       user.LastName,
 			"passportNumber": user.PassportNumber,
 			"perfil":         user.Perfil,
+			"UpdatedAt":      user.UpdatedAt,
+			"IdUserUpdate":   user.ID.Hex(),
+			"active":         user.Active,
 		},
 	}
 
@@ -350,6 +356,4 @@ func UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
 	// Responder com sucesso
 	clarion.FormataRetornoHTTP(w, "Usuário atualizado com sucesso! Documento modificado", http.StatusOK)
 
-	// w.WriteHeader(http.StatusOK)
-	// fmt.Fprintf(w, "Usuário atualizado com sucesso! Documentos modificados: %v", result.ModifiedCount)
 }

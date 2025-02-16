@@ -44,6 +44,7 @@ func VerifyUser(w http.ResponseWriter, r *http.Request) {
 			bson.D{{Key: "username", Value: user.Username}},
 			bson.D{{Key: "email", Value: user.Username}},
 		}},
+		{Key: "active", Value: true}, // Adicionando a condição para o campo active ser true
 	}
 
 	// Verificar se o usuário existe no banco

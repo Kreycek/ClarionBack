@@ -10,7 +10,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"golang.org/x/crypto/bcrypt"
 )
 
 // Modelo de Usuário com campos do MongoDB
@@ -52,6 +51,7 @@ func GetUserByID(client *mongo.Client, dbName, collectionName, userID string) (m
 		"PassportNumber": user.PassportNumber,
 		"Perfil":         user.Perfil,
 		"Username":       user.Username,
+		"Active":         user.Active,
 	}
 
 	fmt.Println("userData", userData)
@@ -171,47 +171,4 @@ func InsertUser(client *mongo.Client, dbName, collectionName string, user models
 	}
 
 	return nil
-}
-
-func updateUser(client *mongo.Client, dbName, collectionName string, user models.User) {
-	// Conectar à coleção
-	collection := client.Database(dbName).Collection(collectionName)
-
-	// Verifica se o ID é válido
-	if user.ID.IsZero() {
-
-		return
-	}
-
-	update := bson.M{
-		"$set": bson.M{
-			"name":           user.Name,
-			"lastName":       user.LastName,
-			"passportNumber": user.PassportNumber,
-			"perfil":         user.Perfil,
-		},
-	}
-
-	// Se uma nova senha for fornecida, gerar um hash
-	if user.Password != "" {
-		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
-		if err != nil {
-			log.Println("Erro ao gerar hash da senha:", err)
-			return
-		}
-		hashedPasswordStr := string(hashedPassword)
-		update["password"] = hashedPasswordStr
-	}
-
-	// Criando o objeto de atualização
-
-	// Atualiza o documento no MongoDB
-	result, err := collection.UpdateOne(context.Background(), bson.M{"_id": user.ID}, update)
-	if err != nil {
-
-		return
-	}
-
-	// Exibir o número de documentos modificados
-	fmt.Printf("Documentos modificados: %v\n", result.ModifiedCount)
 }
