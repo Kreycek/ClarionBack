@@ -174,7 +174,12 @@ func VerifyExistUser(w http.ResponseWriter, r *http.Request) {
 	// 	}},
 	// }
 
-	filter := bson.D{{Key: "email", Value: email.Email}}
+	filter := bson.D{
+		{Key: "email", Value: bson.M{
+			"$regex":   email.Email,
+			"$options": "i", // Ignora diferença entre maiúsculas e minúsculas
+		}},
+	}
 
 	var result bson.M
 	err = collection.FindOne(context.Background(), filter).Decode(&result)

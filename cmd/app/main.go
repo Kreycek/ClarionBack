@@ -4,6 +4,7 @@ import (
 	clarion "Clarion"
 	"Clarion/internal/auth"
 	chartofaccount "Clarion/internal/chartOfAccount"
+	"Clarion/internal/daily"
 	"Clarion/internal/perfil"
 	"Clarion/internal/users"
 	"encoding/json"
@@ -38,15 +39,29 @@ func main() {
 	http.HandleFunc("/login", auth.VerifyUser)       // Rota de login (gera o JWT)
 	http.HandleFunc("/validate", auth.ValidateToken) // Rota de validação do token
 	http.HandleFunc("/getPerfis", perfil.GetAllPerfilsHandler)
+
+	//USUÁRIOS
 	http.HandleFunc("/addUser", users.InsertUserHandler)
 	http.HandleFunc("/getAllUsers", users.GetAllUsersHandler)
 	http.HandleFunc("/verifyExistUser", users.VerifyExistUser)
 	http.HandleFunc("/searchUsers", users.SearchUsersHandler)
 	http.HandleFunc("/getUserById", users.GetUserByIdHandler)
 	http.HandleFunc("/updateUser", users.UpdateUserHandler)
+
+	//PLANO DE CONTAS
 	http.HandleFunc("/getAllChartOfAccount", chartofaccount.GetAllChartOfAccountsHandler)
 	http.HandleFunc("/searchChartOfAccounts", chartofaccount.SearchChartOfAccountsHandler)
+	http.HandleFunc("/getChartOfAccountById", chartofaccount.GetChartOfAccountByIdHandler)
+	http.HandleFunc("/insertChartOfAccount", chartofaccount.InsertChartOfAccountHandler)
+	http.HandleFunc("/updateChartOfAccount", chartofaccount.UpdateChartOfAccountHandler)
+	http.HandleFunc("/updateAllYearOfAccounts", chartofaccount.UpdateYearForAllDocumentsHandler)
+	http.HandleFunc("/VerifyExistChartOfAccount", chartofaccount.VerifyExistChartOfAccountHandler)
 
+	//DIÁRIO
+	http.HandleFunc("/getAllDailys", daily.GetAllDailysHandler)
+	http.HandleFunc("/getAllOnlyDailys", daily.GetAllOnlyDailysHandler)
+
+	//TESTE
 	http.HandleFunc("/teste", loginHandler)
 	handler := c.Handler(http.DefaultServeMux)
 
