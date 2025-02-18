@@ -12,11 +12,8 @@ import (
 
 // Variável global que contém a chave secreta para JWT
 var SecretKey = []byte("my_secret_key")
-
-var UrlSite = "http://localhost:4200"
-
+var UrlSite = "http://localhost:60903"
 var ConectionString = "mongodb://admin:secret@localhost:27017"
-
 var DBName = "clarion"
 
 func TokenValido(w http.ResponseWriter, r *http.Request) (bool, string) {

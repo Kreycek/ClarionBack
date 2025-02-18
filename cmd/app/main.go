@@ -3,6 +3,7 @@ package main
 import (
 	clarion "Clarion"
 	"Clarion/internal/auth"
+	chartofaccount "Clarion/internal/chartOfAccount"
 	"Clarion/internal/perfil"
 	"Clarion/internal/users"
 	"encoding/json"
@@ -43,6 +44,9 @@ func main() {
 	http.HandleFunc("/searchUsers", users.SearchUsersHandler)
 	http.HandleFunc("/getUserById", users.GetUserByIdHandler)
 	http.HandleFunc("/updateUser", users.UpdateUserHandler)
+	http.HandleFunc("/getAllChartOfAccount", chartofaccount.GetAllChartOfAccountsHandler)
+	http.HandleFunc("/searchChartOfAccounts", chartofaccount.SearchChartOfAccountsHandler)
+
 	http.HandleFunc("/teste", loginHandler)
 	handler := c.Handler(http.DefaultServeMux)
 

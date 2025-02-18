@@ -10,6 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // Modelo de Usuário com campos do MongoDB
@@ -52,6 +53,7 @@ func GetUserByID(client *mongo.Client, dbName, collectionName, userID string) (m
 		"Perfil":         user.Perfil,
 		"Username":       user.Username,
 		"Active":         user.Active,
+		"Mobile":         user.Mobile,
 	}
 
 	fmt.Println("userData", userData)
@@ -59,70 +61,85 @@ func GetUserByID(client *mongo.Client, dbName, collectionName, userID string) (m
 	return userData, nil
 }
 
-func SearchUsers(client *mongo.Client, dbName, collectionName string, name, email *string, perfis []int) ([]any, error) {
+func SearchUsers(client *mongo.Client, dbName, collectionName string, name, email *string, perfis []int, page, limit int64) ([]any, int64, error) {
 	collection := client.Database(dbName).Collection(collectionName)
 
 	// Criando o filtro dinâmico
-	fmt.Println("*name", *name)
 	filter := bson.M{}
 	if name != nil && *name != "" {
-		fmt.Println("name", name)
 		filter["name"] = bson.M{"$regex": *name, "$options": "i"}
 	}
 	if email != nil && *email != "" {
 		filter["email"] = bson.M{"$regex": *email, "$options": "i"}
 	}
 	if len(perfis) > 0 {
-		fmt.Println("perfil", perfis)
-		filter["perfil"] = bson.M{"$in": perfis} // Busca usuários que tenham pelo menos um dos perfis informados
+		filter["perfil"] = bson.M{"$in": perfis}
 	}
 
-	// Executa a consulta no MongoDB
-	cursor, err := collection.Find(context.Background(), filter)
+	// Contar total de usuários antes da paginação
+	total, err := collection.CountDocuments(context.Background(), filter)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
+	}
+
+	// Executa a consulta com paginação
+	cursor, err := collection.Find(
+		context.Background(),
+		filter,
+		options.Find().SetSkip(int64((page-1)*limit)).SetLimit(int64(limit)),
+	)
+	if err != nil {
+		return nil, 0, err
 	}
 	defer cursor.Close(context.Background())
 
-	// Converte os resultados em uma slice de usuários
+	// Processa os resultados
 	var users []any
 	for cursor.Next(context.Background()) {
 		var user models.User
 		if err := cursor.Decode(&user); err != nil {
-			return nil, fmt.Errorf("erro ao decodificar usuário: %v", err)
+			return nil, 0, fmt.Errorf("erro ao decodificar usuário: %v", err)
 		}
 
-		// Converter o _id do MongoDB para string para retorno
-		userID := user.ID
-		// Preenche o usuário com o ID convertido em string
 		users = append(users, map[string]any{
-			"ID":             userID, // Agora o campo ID é uma string
+			"ID":             user.ID.Hex(), // Converte ObjectID para string
 			"Name":           user.Name,
 			"LastName":       user.LastName,
 			"Email":          user.Email,
 			"PassportNumber": user.PassportNumber,
 			"Perfil":         user.Perfil,
 			"Username":       user.Username,
+			"Active":         user.Active,
+			"Mobile":         user.Mobile,
 		})
-
 	}
 
-	// var users []models.User
-	// if err = cursor.All(context.Background(), &users); err != nil {
-	// 	return nil, err
-	// }
-
-	return users, nil
+	// Retorna usuários e total de registros
+	return users, total, nil
 }
 
 // Função para obter todos os usuários do banco de dados
-func GetAllUsers(client *mongo.Client, dbName, collectionName string) ([]any, error) {
+func GetAllUsers(client *mongo.Client, dbName, collectionName string, page, limit int) ([]any, int, error) {
 	collection := db.GetCollection(client, dbName, collectionName)
 
-	// Consultar todos os documentos
-	cursor, err := collection.Find(context.Background(), bson.M{})
+	// Criar o filtro (por enquanto vazio, pode ser expandido)
+	filter := bson.M{}
+
+	// Obter a contagem total de usuários antes da paginação
+	total, err := collection.CountDocuments(context.Background(), filter)
 	if err != nil {
-		return nil, fmt.Errorf("erro ao buscar usuários: %v", err)
+		return nil, 0, fmt.Errorf("erro ao contar documentos: %v", err)
+	}
+
+	// Definir opções de busca com paginação
+	options := options.Find()
+	options.SetLimit(int64(limit))
+	options.SetSkip(int64((page - 1) * limit))
+
+	// Buscar usuários com paginação
+	cursor, err := collection.Find(context.Background(), filter, options)
+	if err != nil {
+		return nil, 0, fmt.Errorf("erro ao buscar usuários: %v", err)
 	}
 	defer cursor.Close(context.Background())
 
@@ -130,31 +147,28 @@ func GetAllUsers(client *mongo.Client, dbName, collectionName string) ([]any, er
 	for cursor.Next(context.Background()) {
 		var user models.User
 		if err := cursor.Decode(&user); err != nil {
-			return nil, fmt.Errorf("erro ao decodificar usuário: %v", err)
+			return nil, 0, fmt.Errorf("erro ao decodificar usuário: %v", err)
 		}
 
-		// Converter o _id do MongoDB para string para retorno
-		userID := user.ID
-		// Preenche o usuário com o ID convertido em string
+		// Adiciona os usuários formatados
 		users = append(users, map[string]any{
-			"ID":             userID, // Agora o campo ID é uma string
+			"ID":             user.ID.Hex(), // Convertendo para string
 			"Name":           user.Name,
 			"LastName":       user.LastName,
 			"Email":          user.Email,
 			"PassportNumber": user.PassportNumber,
 			"Perfil":         user.Perfil,
 			"Username":       user.Username,
+			"Active":         user.Active,
+			"Mobile":         user.Mobile,
 		})
-
 	}
 
-	// Verifica se houve algum erro durante a iteração do cursor
 	if err := cursor.Err(); err != nil {
-		return nil, fmt.Errorf("erro ao iterar no cursor: %v", err)
+		return nil, 0, fmt.Errorf("erro ao iterar no cursor: %v", err)
 	}
 
-	// Retorna os usuários
-	return users, nil
+	return users, int(total), nil
 }
 
 // Função para inserir um usuário na coleção "user"

@@ -20,4 +20,5 @@ type User struct {
 	UpdatedAt      time.Time          `json:"updatedAt" bson:"updatedAt"`
 	IdUserCreated  string             `json:"idUserCreated" bson:"idUserCreated,omitempty"`
 	IdUserUpdate   string             `json:"idUserUpdate" bson:"idUserUpdate,omitempty"`
+	Mobile         string             `json:"mobile" bson:"mobile,omitempty"`
 }
