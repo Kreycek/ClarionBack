@@ -60,6 +60,11 @@ func main() {
 	//DIÁRIO
 	http.HandleFunc("/getAllDailys", daily.GetAllDailysHandler)
 	http.HandleFunc("/getAllOnlyDailys", daily.GetAllOnlyDailysHandler)
+	http.HandleFunc("/getDailyById", daily.GetDailyByIdHandler)
+	http.HandleFunc("/InsertDaily", daily.InsertDailyHandler)
+	http.HandleFunc("/UpdateDaily", daily.UpdateDailyHandler)
+	http.HandleFunc("/VerifyExistDaily", daily.VerifyExistDailyHandler)
+	http.HandleFunc("/SearchDailys", daily.SearchDailysHandler)
 
 	//TESTE
 	http.HandleFunc("/teste", loginHandler)
