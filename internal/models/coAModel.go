@@ -6,6 +6,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+// Plano de contas ou em inglês char of acount
 type ChartOfAccount struct {
 	ID            primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
 	CodAccount    string             `json:"codAccount" bson:"codAccount"`

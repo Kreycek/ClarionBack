@@ -165,14 +165,14 @@ func SearchChartOfAccounts(client *mongo.Client, dbName, collectionName string, 
 }
 
 // Função para inserir um usuário na coleção "user"
-func InsertChartOfAccount(client *mongo.Client, dbName, collectionName string, user models.ChartOfAccount) error {
+func InsertChartOfAccount(client *mongo.Client, dbName, collectionName string, cao models.ChartOfAccount) error {
 	collection := client.Database(dbName).Collection(collectionName)
 
 	// Criar um contexto para a operação de inserção
 	ctx := context.Background()
 
 	// Inserir o documento
-	_, err := collection.InsertOne(ctx, user)
+	_, err := collection.InsertOne(ctx, cao)
 	if err != nil {
 		return fmt.Errorf("erro ao inserir plano de contas: %v", err)
 	}

@@ -144,14 +144,14 @@ func GetDailyByID(client *mongo.Client, dbName, collectionName, dailyId string) 
 }
 
 // Função para inserir um usuário na coleção "user"
-func InsertDaily(client *mongo.Client, dbName, collectionName string, user models.Daily) error {
+func InsertDaily(client *mongo.Client, dbName, collectionName string, daily models.Daily) error {
 	collection := client.Database(dbName).Collection(collectionName)
 
 	// Criar um contexto para a operação de inserção
 	ctx := context.Background()
 
 	// Inserir o documento
-	_, err := collection.InsertOne(ctx, user)
+	_, err := collection.InsertOne(ctx, daily)
 	if err != nil {
 		return fmt.Errorf("erro ao inserir plano de contas: %v", err)
 	}

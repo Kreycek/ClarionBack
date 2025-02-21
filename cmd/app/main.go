@@ -4,6 +4,7 @@ import (
 	clarion "Clarion"
 	"Clarion/internal/auth"
 	chartofaccount "Clarion/internal/chartOfAccount"
+	"Clarion/internal/company"
 	"Clarion/internal/daily"
 	"Clarion/internal/perfil"
 	"Clarion/internal/users"
@@ -65,6 +66,14 @@ func main() {
 	http.HandleFunc("/UpdateDaily", daily.UpdateDailyHandler)
 	http.HandleFunc("/VerifyExistDaily", daily.VerifyExistDailyHandler)
 	http.HandleFunc("/SearchDailys", daily.SearchDailysHandler)
+
+	//	COMPANYS
+	http.HandleFunc("/GetAllCompanys", company.GetAllCompanysHandler)
+	http.HandleFunc("/GetCompanyById", company.GetCompanyByIdHandler)
+	http.HandleFunc("/InsertCompany", company.InsertCompanyHandler)
+	http.HandleFunc("/UpdateCompany", company.UpdateCompanyHandler)
+	http.HandleFunc("/VerifyExistCompany", company.VerifyExistCompanyHandler)
+	http.HandleFunc("/SearchCompanys", company.SearchCompanysHandler)
 
 	//TESTE
 	http.HandleFunc("/teste", loginHandler)
