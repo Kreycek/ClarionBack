@@ -77,7 +77,7 @@ func GetAllDailysHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Obter usuários paginados
-	chartOfAccounts, total, err := GetAllDaily(client, clarion.DBName, "daily", page, limit)
+	dailys, total, err := GetAllDaily(client, clarion.DBName, "daily", page, limit)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("erro ao buscar diários: %v", err), http.StatusInternalServerError)
 		return
@@ -89,7 +89,7 @@ func GetAllDailysHandler(w http.ResponseWriter, r *http.Request) {
 		"page":   page,
 		"limit":  limit,
 		"pages":  (total + limit - 1) / limit, // Calcula o número total de páginas
-		"dailys": chartOfAccounts,
+		"dailys": dailys,
 	}
 
 	w.Header().Set("Content-Type", "application/json")

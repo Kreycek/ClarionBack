@@ -146,20 +146,28 @@ func InsertCompany(client *mongo.Client, dbName, collectionName string, company 
 func SearchCompany(
 	client *mongo.Client,
 	dbName, collectionName string,
-	name *string,
+	codCompany *string,
 	document *string,
+	address *string,
 	page,
 	limit int64) ([]any, int64, error) {
 
 	collection := client.Database(dbName).Collection(collectionName)
 
+	fmt.Println("*codCompany", *codCompany)
+	fmt.Println(" *document", *document)
+	fmt.Println("  *address", *address)
 	// Criando o filtro dinâmico
 	filter := bson.M{}
-	if name != nil && *name != "" {
-		filter["name"] = bson.M{"$regex": *name, "$options": "i"}
+	if codCompany != nil && *codCompany != "" {
+		filter["codCompany"] = bson.M{"$regex": *codCompany, "$options": "i"}
 	}
-	if document != nil && *name != "" {
+	if document != nil && *document != "" {
 		filter["documents.documentNumber"] = bson.M{"$regex": *document, "$options": "i"}
+	}
+
+	if address != nil && *address != "" {
+		filter["documents.address"] = bson.M{"$regex": *address, "$options": "i"}
 	}
 
 	// Contar total de usuários antes da paginação
@@ -200,7 +208,7 @@ func SearchCompany(
 			"NationalCapital": company.NationalCapital,
 			"ExtraCapital":    company.ExtraCapital,
 			"PublicCapital":   company.PublicCapital,
-			"VATRegime":       company.VATRegime,
+			"vatRegime":       company.VATRegime,
 			"Email":           company.Email,
 			"WebSite":         company.WebSite,
 			"Active":          company.Active,

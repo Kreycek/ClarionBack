@@ -1,4 +1,4 @@
-package company
+package movement
 
 import (
 	clarion "Clarion"
@@ -14,10 +14,9 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func GetAllCompanysHandler(w http.ResponseWriter, r *http.Request) {
+func GetAllMovementsHandler(w http.ResponseWriter, r *http.Request) {
 	status, msg := clarion.TokenValido(w, r)
 	if !status {
 		http.Error(w, fmt.Sprintf("erro ao buscar perfis: %v", msg), http.StatusUnauthorized)
@@ -44,7 +43,7 @@ func GetAllCompanysHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Obter usuários paginados
-	companys, total, err := GetAllCompany(client, clarion.DBName, "company", page, limit)
+	movements, total, err := GetAllMovements(client, clarion.DBName, "movement", page, limit)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("erro ao buscar diários: %v", err), http.StatusInternalServerError)
 		return
@@ -52,11 +51,11 @@ func GetAllCompanysHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Criar resposta JSON com paginação
 	response := map[string]any{
-		"total":    total,
-		"page":     page,
-		"limit":    limit,
-		"pages":    (total + limit - 1) / limit, // Calcula o número total de páginas
-		"companys": companys,
+		"total":     total,
+		"page":      page,
+		"limit":     limit,
+		"pages":     (total + limit - 1) / limit, // Calcula o número total de páginas
+		"movements": movements,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -66,7 +65,7 @@ func GetAllCompanysHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func GetCompanyByIdHandler(w http.ResponseWriter, r *http.Request) {
+func GetMovementByIdHandler(w http.ResponseWriter, r *http.Request) {
 	// Validar token
 	status, msg := clarion.TokenValido(w, r)
 	if !status {
@@ -97,9 +96,9 @@ func GetCompanyByIdHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Buscar o usuário no banco de dados pelo ID
-	user, err := GetCompanyByID(client, clarion.DBName, "company", id)
+	movement, err := GetMovementByID(client, clarion.DBName, "movement", id)
 	if err != nil {
-		http.Error(w, "Erro ao buscar empresas", http.StatusInternalServerError)
+		http.Error(w, "Erro ao buscar diários", http.StatusInternalServerError)
 		return
 	}
 
@@ -108,13 +107,13 @@ func GetCompanyByIdHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 
 	// Enviar o usuário como resposta JSON
-	if err := json.NewEncoder(w).Encode(user); err != nil {
+	if err := json.NewEncoder(w).Encode(movement); err != nil {
 		log.Printf("erro ao codificar resposta JSON: %v", err)
 		http.Error(w, "Erro ao codificar resposta", http.StatusInternalServerError)
 	}
 }
 
-func InsertCompanyHandler(w http.ResponseWriter, r *http.Request) {
+func InsertMovementHandler(w http.ResponseWriter, r *http.Request) {
 	// Validar o token de autenticação
 	status, msg := clarion.TokenValido(w, r)
 	if !status {
@@ -123,19 +122,19 @@ func InsertCompanyHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Ler o corpo da requisição
-	var company models.Company
-	err := json.NewDecoder(r.Body).Decode(&company)
+	var movement models.Movement
+	err := json.NewDecoder(r.Body).Decode(&movement)
 	if err != nil {
 		http.Error(w, "erro ao decodificar corpo da requisição", http.StatusBadRequest)
 		return
 	}
 
-	if company.Active == false {
-		company.Active = true
+	if movement.Active == false {
+		movement.Active = true
 	}
 
-	if company.CreatedAt.IsZero() {
-		company.CreatedAt = time.Now()
+	if movement.CreatedAt.IsZero() {
+		movement.CreatedAt = time.Now()
 	}
 	// Conectar ao MongoDB
 	client, err := db.ConnectMongoDB(clarion.ConectionString)
@@ -146,22 +145,22 @@ func InsertCompanyHandler(w http.ResponseWriter, r *http.Request) {
 	defer db.CloseMongoDB(client)
 
 	// Inserir o usuário no MongoDB
-	err = InsertCompany(client, clarion.DBName, "company", company)
+	err = InsertMovement(client, clarion.DBName, "movement", movement)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("erro ao inserir Empresa: %v", err), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("erro ao inserir Diário: %v", err), http.StatusInternalServerError)
 		return
 	}
 
 	// Retornar a resposta com os dados dos usuários
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(company); err != nil {
+	if err := json.NewEncoder(w).Encode(movement); err != nil {
 		log.Printf("erro ao codificar resposta JSON: %v", err)
 	}
 
 }
 
-func UpdateCompanyHandler(w http.ResponseWriter, r *http.Request) {
+func UpdateMovementHandler(w http.ResponseWriter, r *http.Request) {
 	// Validar o token de autenticação
 	status, msg := clarion.TokenValido(w, r)
 	if !status {
@@ -170,8 +169,9 @@ func UpdateCompanyHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Decodificar o JSON recebido
-	var company models.Company
-	if err := json.NewDecoder(r.Body).Decode(&company); err != nil {
+	var movement models.Movement
+
+	if err := json.NewDecoder(r.Body).Decode(&movement); err != nil {
 		// http.Error(w, "Erro ao decodificar JSON", http.StatusBadRequest)
 		clarion.FormataRetornoHTTP(w, "Erro ao decodificar JSON", http.StatusBadRequest)
 
@@ -179,38 +179,29 @@ func UpdateCompanyHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Verifica se o ID é válido
-	if company.ID.IsZero() {
+	if movement.ID.IsZero() {
 
-		clarion.FormataRetornoHTTP(w, "ID do plano de contas inválido", http.StatusBadRequest)
+		clarion.FormataRetornoHTTP(w, "ID do movimento inválido", http.StatusBadRequest)
 
 		// http.Error(w, "ID do usuário inválido", http.StatusBadRequest)
 		return
 	}
 
-	if company.UpdatedAt.IsZero() {
-		company.UpdatedAt = time.Now()
+	if movement.UpdatedAt.IsZero() {
+		movement.UpdatedAt = time.Now()
 	}
 
 	// Criar o objeto de atualização
 	update := bson.M{
 		"$set": bson.M{
-			"codCompany":      company.CodCompany,
-			"name":            company.Name,
-			"cae":             company.CAE,
-			"documents":       company.Documents,
-			"mainActivity":    company.MainActivity,
-			"otherActivities": company.OtherActivities,
-			"legalNature":     company.LegalNature,
-			"socialCapital":   company.SocialCapital,
-			"nationalCapital": company.NationalCapital,
-			"extraCapital":    company.ExtraCapital,
-			"publicCapital":   company.PublicCapital,
-			"vatRegime":       company.VATRegime,
-			"email":           company.Email,
-			"webSite":         company.WebSite,
-			"active":          company.Active,
-			"exercise":        company.Exercise,
-			"phone":           company.Phone,
+			"ID":           movement.ID.Hex(), // Agora o campo ID é uma string
+			"CodDaily":     movement.CodDaily,
+			"CodDocument":  movement.CodDocument,
+			"Accounts":     movement.Accounts,
+			"IVA":          movement.IVA,
+			"updatedAt":    movement.UpdatedAt,
+			"idUserUpdate": movement.ID.Hex(),
+			"active":       movement.Active,
 		},
 	}
 
@@ -224,10 +215,10 @@ func UpdateCompanyHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer client.Disconnect(context.Background())
 
-	collection := client.Database(clarion.DBName).Collection("company")
-	result, err := collection.UpdateOne(context.Background(), bson.M{"_id": company.ID}, update)
+	collection := client.Database(clarion.DBName).Collection("movement")
+	result, err := collection.UpdateOne(context.Background(), bson.M{"_id": movement.ID}, update)
 	if err != nil {
-		clarion.FormataRetornoHTTP(w, "Erro ao atualizar diário, Erro ao atualizar diário", http.StatusInternalServerError)
+		clarion.FormataRetornoHTTP(w, "Erro ao atualizar movimento de contas, Erro ao atualizar diário", http.StatusInternalServerError)
 
 		// log.Println("Erro ao atualizar usuário:", err)
 		// http.Error(w, "Erro ao atualizar usuário", http.StatusInternalServerError)
@@ -243,65 +234,11 @@ func UpdateCompanyHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Responder com sucesso
-	clarion.FormataRetornoHTTP(w, "Empresa atualizada com sucesso! Documento modificado", http.StatusOK)
+	clarion.FormataRetornoHTTP(w, "Movimento atualizado com sucesso! Documento modificado", http.StatusOK)
 
 }
 
-// Função para verificar o nome de usuário e senha
-func VerifyExistCompanyHandler(w http.ResponseWriter, r *http.Request) {
-
-	status, msg := clarion.TokenValido(w, r)
-	if !status {
-		http.Error(w, fmt.Sprintf("erro ao validar token: %v", msg), http.StatusUnauthorized)
-		return
-	}
-
-	// Parse o corpo da requisição
-	var company models.Company
-
-	err := json.NewDecoder(r.Body).Decode(&company)
-	if err != nil {
-		http.Error(w, "Erro ao ler o corpo da requisição", http.StatusBadRequest)
-		return
-	}
-
-	// fmt.Println("email", email)
-	// Conectar ao MongoDB
-	client, err := db.ConnectMongoDB(clarion.ConectionString)
-	if err != nil {
-		http.Error(w, "Erro ao conectar ao banco de dados", http.StatusInternalServerError)
-		return
-	}
-	defer db.CloseMongoDB(client)
-
-	// Obter a coleção de usuários
-	collection := db.GetCollection(client, "clarion", "company")
-	// filter := bson.D{
-	// 	{Key: "$or", Value: bson.A{
-	// 		bson.D{{Key: "email", Value: userName}},
-	// 	}},
-	// }
-
-	filter := bson.D{{Key: "codCompany", Value: company.CodCompany}}
-
-	var result bson.M
-	err = collection.FindOne(context.Background(), filter).Decode(&result)
-
-	if err != nil {
-		if err == mongo.ErrNoDocuments {
-			clarion.FormataRetornoHTTP(w, false, http.StatusOK)
-			return
-		}
-		http.Error(w, "Erro interno", http.StatusInternalServerError)
-		return
-	}
-
-	// Se encontrou um documento, retorna true
-	clarion.FormataRetornoHTTP(w, true, http.StatusOK)
-
-}
-
-func SearchCompanysHandler(w http.ResponseWriter, r *http.Request) {
+func SearchMovementsHandler(w http.ResponseWriter, r *http.Request) {
 	// Verificar se a requisição é do tipo POST
 	if r.Method != http.MethodPost {
 		http.Error(w, "Método não permitido", http.StatusMethodNotAllowed)
@@ -326,11 +263,12 @@ func SearchCompanysHandler(w http.ResponseWriter, r *http.Request) {
 	// Definir estrutura para receber os parâmetros
 
 	var request struct {
-		CodCompany string `json:"codCompany"`
-		Document   string `json:"document"`
-		Address    string `json:"address"`
-		Page       int64  `json:"page"`
-		Limit      int64  `json:"limit"`
+		DtMovement  *string `json:"dtMovement"`
+		CodDaily    *string `json:"codDaily"`
+		CodDocument *string `json:"codDocument"`
+		CodAccount  *string `json:"codAccount"`
+		Page        int64   `json:"page"`
+		Limit       int64   `json:"limit"`
 	}
 
 	// Decodificar o corpo da requisição JSON
@@ -350,19 +288,19 @@ func SearchCompanysHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Buscar usuários com paginação
-	companys, total, err := SearchCompany(client, clarion.DBName, "company", &request.CodCompany, &request.Document, &request.Address, request.Page, request.Limit)
+	movements, total, err := SearchMovements(client, clarion.DBName, "movement", request.CodDaily, request.CodDocument, request.CodAccount, request.Page, request.Limit)
 	if err != nil {
-		http.Error(w, "Erro ao buscar empresas", http.StatusInternalServerError)
+		http.Error(w, "Erro ao buscar movimento", http.StatusInternalServerError)
 		return
 	}
 
 	// Criar resposta JSON com paginação
 	response := map[string]any{
-		"total":    total,
-		"page":     request.Page,
-		"limit":    request.Limit,
-		"pages":    (total + request.Limit - 1) / request.Limit, // Número total de páginas
-		"companys": companys,
+		"total":     total,
+		"page":      request.Page,
+		"limit":     request.Limit,
+		"pages":     (total + request.Limit - 1) / request.Limit, // Número total de páginas
+		"movements": movements,
 	}
 
 	// Retornar resposta JSON

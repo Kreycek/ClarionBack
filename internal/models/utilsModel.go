@@ -8,3 +8,10 @@ type Exercise struct {
 	EndMonth   string    `json:"endMonth" bson:"endMonth"`
 	DtAdd      time.Time `json:"dtAdd" bson:"dtAdd"`
 }
+
+type MovementAccount struct {
+	DtMovement  int       `json:"dtMovement" bson:"dtMovement"`
+	CodAccount  string    `json:"codAccount" bson:"codAccount"`
+	DebitValue  string    `json:"debitValue" bson:"debitValue"`
+	CreditValue time.Time `json:"creditValue" bson:"creditValue"`
+}

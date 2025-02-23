@@ -6,6 +6,7 @@ import (
 	chartofaccount "Clarion/internal/chartOfAccount"
 	"Clarion/internal/company"
 	"Clarion/internal/daily"
+	"Clarion/internal/movement"
 	"Clarion/internal/perfil"
 	"Clarion/internal/users"
 	"encoding/json"
@@ -74,6 +75,13 @@ func main() {
 	http.HandleFunc("/UpdateCompany", company.UpdateCompanyHandler)
 	http.HandleFunc("/VerifyExistCompany", company.VerifyExistCompanyHandler)
 	http.HandleFunc("/SearchCompanys", company.SearchCompanysHandler)
+
+	//MOVIMENTO
+	http.HandleFunc("/GetAllMovements", movement.GetAllMovementsHandler)
+	http.HandleFunc("/GetMovementById", movement.GetMovementByIdHandler)
+	http.HandleFunc("/InsertMovement", movement.InsertMovementHandler)
+	http.HandleFunc("/UpdateMovement", movement.UpdateMovementHandler)
+	http.HandleFunc("/SearchMovements", movement.SearchMovementsHandler)
 
 	//TESTE
 	http.HandleFunc("/teste", loginHandler)
