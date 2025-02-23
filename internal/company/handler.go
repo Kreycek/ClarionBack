@@ -146,7 +146,7 @@ func InsertCompanyHandler(w http.ResponseWriter, r *http.Request) {
 	defer db.CloseMongoDB(client)
 
 	// Inserir o usuário no MongoDB
-	err = InsertDaily(client, clarion.DBName, "daily", company)
+	err = InsertCompany(client, clarion.DBName, "company", company)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("erro ao inserir Empresa: %v", err), http.StatusInternalServerError)
 		return
@@ -195,16 +195,17 @@ func UpdateCompanyHandler(w http.ResponseWriter, r *http.Request) {
 	update := bson.M{
 		"$set": bson.M{
 			"codCompany":      company.CodCompany,
-			"cAE":             company.CAE,
+			"name":            company.Name,
+			"cae":             company.CAE,
 			"documents":       company.Documents,
 			"mainActivity":    company.MainActivity,
 			"otherActivities": company.OtherActivities,
 			"legalNature":     company.LegalNature,
 			"socialCapital":   company.SocialCapital,
 			"nationalCapital": company.NationalCapital,
-			"nxtraCapital":    company.ExtraCapital,
-			"nublicCapital":   company.PublicCapital,
-			"vATRegime":       company.VATRegime,
+			"extraCapital":    company.ExtraCapital,
+			"publicCapital":   company.PublicCapital,
+			"vatRegime":       company.VATRegime,
 			"email":           company.Email,
 			"webSite":         company.WebSite,
 			"active":          company.Active,
@@ -223,7 +224,7 @@ func UpdateCompanyHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer client.Disconnect(context.Background())
 
-	collection := client.Database(clarion.DBName).Collection("daily")
+	collection := client.Database(clarion.DBName).Collection("company")
 	result, err := collection.UpdateOne(context.Background(), bson.M{"_id": company.ID}, update)
 	if err != nil {
 		clarion.FormataRetornoHTTP(w, "Erro ao atualizar diário, Erro ao atualizar diário", http.StatusInternalServerError)

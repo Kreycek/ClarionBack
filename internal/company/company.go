@@ -48,6 +48,7 @@ func GetAllCompany(client *mongo.Client, dbName, collectionName string, page, li
 		companys = append(companys, map[string]any{
 			"ID":              company.ID.Hex(), // Convertendo para string
 			"CodCompany":      company.CodCompany,
+			"Name":            company.Name,
 			"CAE":             company.CAE,
 			"Documents":       company.Documents,
 			"MainActivity":    company.MainActivity,
@@ -103,6 +104,7 @@ func GetCompanyByID(client *mongo.Client, dbName, collectionName, companyId stri
 	companys := map[string]any{
 		"ID":              companyId, // Agora o campo ID é uma string
 		"CodCompany":      company.CodCompany,
+		"Name":            company.Name,
 		"CAE":             company.CAE,
 		"Documents":       company.Documents,
 		"MainActivity":    company.MainActivity,
@@ -126,7 +128,7 @@ func GetCompanyByID(client *mongo.Client, dbName, collectionName, companyId stri
 }
 
 // Função para inserir uma empresa na coleção "user"
-func InsertDaily(client *mongo.Client, dbName, collectionName string, company models.Company) error {
+func InsertCompany(client *mongo.Client, dbName, collectionName string, company models.Company) error {
 	collection := client.Database(dbName).Collection(collectionName)
 
 	// Criar um contexto para a operação de inserção
@@ -202,7 +204,7 @@ func SearchCompany(
 			"Email":           company.Email,
 			"WebSite":         company.WebSite,
 			"Active":          company.Active,
-			"Phones":          company.Phone,
+			"Phone":           company.Phone,
 			"Exercise":        company.Exercise,
 		})
 	}

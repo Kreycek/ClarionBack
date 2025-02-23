@@ -19,15 +19,14 @@ type Company struct {
 	NationalCapital string             `json:"nationalCapital" bson:"nationalCapital,omitempty"`
 	ExtraCapital    string             `json:"extraCapital" bson:"extraCapital,omitempty"`
 	PublicCapital   string             `json:"publicCapital" bson:"publicCapital,omitempty"`
-
-	VATRegime     string     `json:"vatRegime" bson:"vatRegime,omitempty"`
-	Email         string     `json:"email" bson:"email,omitempty"`
-	WebSite       string     `json:"webSite" bson:"webSite,omitempty"`
-	Active        bool       `json:"active" bson:"active,omitempty"`
-	CreatedAt     time.Time  `json:"createdAt" bson:"createdAt,omitempty"`
-	UpdatedAt     time.Time  `json:"updatedAt" bson:"updatedAt,omitempty"`
-	IdUserCreated string     `json:"idUserCreated" bson:"idUserCreated,omitempty"`
-	IdUserUpdate  string     `json:"idUserUpdate" bson:"idUserUpdate,omitempty"`
-	Phone         []Phone    `json:"phones" bson:"phones,omitempty"`
-	Exercise      []Exercise `json:"exercise" bson:"exercise,omitempty"`
+	VATRegime       string             `json:"vatRegime" bson:"vatRegime,omitempty"`
+	Email           string             `json:"email" bson:"email,omitempty"`
+	WebSite         string             `json:"webSite" bson:"webSite,omitempty"`
+	Active          bool               `json:"active" bson:"active,omitempty"`
+	CreatedAt       time.Time          `json:"createdAt" bson:"createdAt,omitempty"`
+	UpdatedAt       time.Time          `json:"updatedAt" bson:"updatedAt,omitempty"`
+	IdUserCreated   string             `json:"idUserCreated" bson:"idUserCreated,omitempty"`
+	IdUserUpdate    string             `json:"idUserUpdate" bson:"idUserUpdate,omitempty"`
+	Phone           []Phone            `json:"phone" bson:"phone,omitempty"`
+	Exercise        []Exercise         `json:"exercise" bson:"exercise,omitempty"`
 }
