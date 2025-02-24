@@ -120,7 +120,7 @@ func InsertMovement(client *mongo.Client, dbName, collectionName string, movemen
 	return nil
 }
 
-func SearchMovements(client *mongo.Client, dbName, collectionName string, CodDaily, CodDocument, CodAccount *string, page, limit int64) ([]any, int64, error) {
+func SearchMovements(client *mongo.Client, dbName, collectionName string, CodDaily, CodAccount *string, documents []string, page, limit int64) ([]any, int64, error) {
 	collection := client.Database(dbName).Collection(collectionName)
 
 	// Criando o filtro dinâmico
@@ -128,11 +128,17 @@ func SearchMovements(client *mongo.Client, dbName, collectionName string, CodDai
 	if CodDaily != nil && *CodDaily != "" {
 		filter["codDaily"] = bson.M{"$regex": *CodDaily, "$options": "i"}
 	}
-	if CodDocument != nil && *CodDocument != "" {
-		filter["codDocument"] = bson.M{"$regex": *CodDocument, "$options": "i"}
+
+	if len(documents) > 0 {
+		var regexFilters []bson.M
+		for _, doc := range documents {
+			regexFilters = append(regexFilters, bson.M{"codDocument": bson.M{"$regex": doc, "$options": "i"}})
+		}
+
+		filter["$or"] = regexFilters
 	}
 
-	if CodDocument != nil && *CodDocument != "" {
+	if CodAccount != nil && *CodAccount != "" {
 		filter["account.codAccount"] = bson.M{"$regex": *CodAccount, "$options": "i"}
 	}
 

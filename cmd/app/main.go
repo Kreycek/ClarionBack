@@ -5,6 +5,7 @@ import (
 	"Clarion/internal/auth"
 	chartofaccount "Clarion/internal/chartOfAccount"
 	"Clarion/internal/company"
+	costcenter "Clarion/internal/costCenter"
 	"Clarion/internal/daily"
 	"Clarion/internal/movement"
 	"Clarion/internal/perfil"
@@ -82,6 +83,16 @@ func main() {
 	http.HandleFunc("/InsertMovement", movement.InsertMovementHandler)
 	http.HandleFunc("/UpdateMovement", movement.UpdateMovementHandler)
 	http.HandleFunc("/SearchMovements", movement.SearchMovementsHandler)
+
+	//COST CENTER
+
+	http.HandleFunc("/GetAllCostCenters", costcenter.GetAllCostCentersHandler)
+	http.HandleFunc("/GetAllOnlyCostCenters", costcenter.GetAllOnlyCostCentersHandler)
+	http.HandleFunc("/GetCostCenerById", costcenter.GetCostCenerByIdHandler)
+	http.HandleFunc("/InsertCostCenter", costcenter.InsertCostCenterHandler)
+	http.HandleFunc("/UpdateCostCenter", costcenter.UpdateCostCenterHandler)
+	http.HandleFunc("/VerifyExistCostCenter", costcenter.VerifyExistCostCenterHandler)
+	http.HandleFunc("/SearchCostCenters", costcenter.SearchCostCentersHandler)
 
 	//TESTE
 	http.HandleFunc("/teste", loginHandler)

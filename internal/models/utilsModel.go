@@ -15,3 +15,8 @@ type MovementAccount struct {
 	DebitValue  string    `json:"debitValue" bson:"debitValue"`
 	CreditValue time.Time `json:"creditValue" bson:"creditValue"`
 }
+
+type CostCenterSub struct {
+	CodCostCenterSub string `json:"codCostCenterSub" bson:"codCostCenterSub"`
+	Description      string `json:"description" bson:"description"`
+}

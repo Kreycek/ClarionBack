@@ -11,3 +11,7 @@ type ChartOfAccountVerifyExistRequest struct {
 type DailyVerifyExistRequest struct {
 	CodDaily string `json:"codDaily"`
 }
+
+type CostCenterVerifyExistRequest struct {
+	CodCostCenter string `json:"codCostCenter"`
+}

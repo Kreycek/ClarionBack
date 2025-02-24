@@ -1,4 +1,4 @@
-package movement
+package costcenter
 
 import (
 	clarion "Clarion"
@@ -14,9 +14,43 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func GetAllMovementsHandler(w http.ResponseWriter, r *http.Request) {
+// Função de handler para a rota GET /dailys apenas diários sem documentos
+func GetAllOnlyCostCentersHandler(w http.ResponseWriter, r *http.Request) {
+
+	status, msg := clarion.TokenValido(w, r)
+
+	if !status {
+		http.Error(w, fmt.Sprintf("erro ao buscar usuários: %v", msg), http.StatusUnauthorized)
+		return
+	}
+
+	// Conectar ao MongoDB
+	client, err := db.ConnectMongoDB(clarion.ConectionString)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("erro ao conectar ao MongoDB: %v", err), http.StatusInternalServerError)
+		return
+	}
+	defer db.CloseMongoDB(client)
+
+	// Obter todos os usuários
+	costCenters, err := GetCostCenter(client, clarion.DBName, "costCenter")
+	if err != nil {
+		http.Error(w, fmt.Sprintf("erro ao buscar usuários: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	// Retornar a resposta com os dados dos usuários
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(costCenters); err != nil {
+		log.Printf("erro ao codificar resposta JSON: %v", err)
+	}
+}
+
+func GetAllCostCentersHandler(w http.ResponseWriter, r *http.Request) {
 	status, msg := clarion.TokenValido(w, r)
 	if !status {
 		http.Error(w, fmt.Sprintf("erro ao buscar perfis: %v", msg), http.StatusUnauthorized)
@@ -43,7 +77,7 @@ func GetAllMovementsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Obter usuários paginados
-	movements, total, err := GetAllMovements(client, clarion.DBName, "movement", page, limit)
+	costCenters, total, err := GetAllCostCenter(client, clarion.DBName, "costCenter", page, limit)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("erro ao buscar diários: %v", err), http.StatusInternalServerError)
 		return
@@ -51,11 +85,11 @@ func GetAllMovementsHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Criar resposta JSON com paginação
 	response := map[string]any{
-		"total":     total,
-		"page":      page,
-		"limit":     limit,
-		"pages":     (total + limit - 1) / limit, // Calcula o número total de páginas
-		"movements": movements,
+		"total":        total,
+		"page":         page,
+		"limit":        limit,
+		"pages":        (total + limit - 1) / limit, // Calcula o número total de páginas
+		"constCenters": costCenters,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -65,7 +99,7 @@ func GetAllMovementsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func GetMovementByIdHandler(w http.ResponseWriter, r *http.Request) {
+func GetCostCenerByIdHandler(w http.ResponseWriter, r *http.Request) {
 	// Validar token
 	status, msg := clarion.TokenValido(w, r)
 	if !status {
@@ -96,7 +130,7 @@ func GetMovementByIdHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Buscar o usuário no banco de dados pelo ID
-	movement, err := GetMovementByID(client, clarion.DBName, "movement", id)
+	user, err := GetCostCenterByID(client, clarion.DBName, "costCenter", id)
 	if err != nil {
 		http.Error(w, "Erro ao buscar diários", http.StatusInternalServerError)
 		return
@@ -107,13 +141,13 @@ func GetMovementByIdHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 
 	// Enviar o usuário como resposta JSON
-	if err := json.NewEncoder(w).Encode(movement); err != nil {
+	if err := json.NewEncoder(w).Encode(user); err != nil {
 		log.Printf("erro ao codificar resposta JSON: %v", err)
 		http.Error(w, "Erro ao codificar resposta", http.StatusInternalServerError)
 	}
 }
 
-func InsertMovementHandler(w http.ResponseWriter, r *http.Request) {
+func InsertCostCenterHandler(w http.ResponseWriter, r *http.Request) {
 	// Validar o token de autenticação
 	status, msg := clarion.TokenValido(w, r)
 	if !status {
@@ -122,19 +156,19 @@ func InsertMovementHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Ler o corpo da requisição
-	var movement models.Movement
-	err := json.NewDecoder(r.Body).Decode(&movement)
+	var costCenter models.CostCenter
+	err := json.NewDecoder(r.Body).Decode(&costCenter)
 	if err != nil {
 		http.Error(w, "erro ao decodificar corpo da requisição", http.StatusBadRequest)
 		return
 	}
 
-	if movement.Active == false {
-		movement.Active = true
+	if costCenter.Active == false {
+		costCenter.Active = true
 	}
 
-	if movement.CreatedAt.IsZero() {
-		movement.CreatedAt = time.Now()
+	if costCenter.CreatedAt.IsZero() {
+		costCenter.CreatedAt = time.Now()
 	}
 	// Conectar ao MongoDB
 	client, err := db.ConnectMongoDB(clarion.ConectionString)
@@ -145,22 +179,22 @@ func InsertMovementHandler(w http.ResponseWriter, r *http.Request) {
 	defer db.CloseMongoDB(client)
 
 	// Inserir o usuário no MongoDB
-	err = InsertMovement(client, clarion.DBName, "movement", movement)
+	err = InsertCostCenter(client, clarion.DBName, "costCenter", costCenter)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("erro ao inserir Diário: %v", err), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("erro ao inserir centro de custo: %v", err), http.StatusInternalServerError)
 		return
 	}
 
 	// Retornar a resposta com os dados dos usuários
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(movement); err != nil {
+	if err := json.NewEncoder(w).Encode(costCenter); err != nil {
 		log.Printf("erro ao codificar resposta JSON: %v", err)
 	}
 
 }
 
-func UpdateMovementHandler(w http.ResponseWriter, r *http.Request) {
+func UpdateCostCenterHandler(w http.ResponseWriter, r *http.Request) {
 	// Validar o token de autenticação
 	status, msg := clarion.TokenValido(w, r)
 	if !status {
@@ -169,9 +203,8 @@ func UpdateMovementHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Decodificar o JSON recebido
-	var movement models.Movement
-
-	if err := json.NewDecoder(r.Body).Decode(&movement); err != nil {
+	var costCenter models.CostCenter
+	if err := json.NewDecoder(r.Body).Decode(&costCenter); err != nil {
 		// http.Error(w, "Erro ao decodificar JSON", http.StatusBadRequest)
 		clarion.FormataRetornoHTTP(w, "Erro ao decodificar JSON", http.StatusBadRequest)
 
@@ -179,29 +212,27 @@ func UpdateMovementHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Verifica se o ID é válido
-	if movement.ID.IsZero() {
+	if costCenter.ID.IsZero() {
 
-		clarion.FormataRetornoHTTP(w, "ID do movimento inválido", http.StatusBadRequest)
+		clarion.FormataRetornoHTTP(w, "ID do centro de custo inválido", http.StatusBadRequest)
 
 		// http.Error(w, "ID do usuário inválido", http.StatusBadRequest)
 		return
 	}
 
-	if movement.UpdatedAt.IsZero() {
-		movement.UpdatedAt = time.Now()
+	if costCenter.UpdatedAt.IsZero() {
+		costCenter.UpdatedAt = time.Now()
 	}
 
 	// Criar o objeto de atualização
 	update := bson.M{
 		"$set": bson.M{
-			"ID":           movement.ID.Hex(), // Agora o campo ID é uma string
-			"CodDaily":     movement.CodDaily,
-			"CodDocument":  movement.CodDocument,
-			"Accounts":     movement.Accounts,
-			"IVA":          movement.IVA,
-			"updatedAt":    movement.UpdatedAt,
-			"idUserUpdate": movement.ID.Hex(),
-			"active":       movement.Active,
+
+			"codCostCenter": costCenter.CodCostCenter,
+			"description":   costCenter.Description,
+			"costCenterSub": costCenter.CostCenterSub,
+			"idUserUpdate":  costCenter.ID.Hex(),
+			"active":        costCenter.Active,
 		},
 	}
 
@@ -215,10 +246,10 @@ func UpdateMovementHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer client.Disconnect(context.Background())
 
-	collection := client.Database(clarion.DBName).Collection("movement")
-	result, err := collection.UpdateOne(context.Background(), bson.M{"_id": movement.ID}, update)
+	collection := client.Database(clarion.DBName).Collection("costCenter")
+	result, err := collection.UpdateOne(context.Background(), bson.M{"_id": costCenter.ID}, update)
 	if err != nil {
-		clarion.FormataRetornoHTTP(w, "Erro ao atualizar movimento de contas, Erro ao atualizar diário", http.StatusInternalServerError)
+		clarion.FormataRetornoHTTP(w, "Erro ao atualizar centro de custo, Erro ao atualizar centro de custo", http.StatusInternalServerError)
 
 		// log.Println("Erro ao atualizar usuário:", err)
 		// http.Error(w, "Erro ao atualizar usuário", http.StatusInternalServerError)
@@ -234,11 +265,67 @@ func UpdateMovementHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Responder com sucesso
-	clarion.FormataRetornoHTTP(w, "Movimento atualizado com sucesso! Documento modificado", http.StatusOK)
+	clarion.FormataRetornoHTTP(w, "Centro de custo atualizado com sucesso! Documento modificado", http.StatusOK)
 
 }
 
-func SearchMovementsHandler(w http.ResponseWriter, r *http.Request) {
+// Função para verificar o nome de usuário e senha
+func VerifyExistCostCenterHandler(w http.ResponseWriter, r *http.Request) {
+
+	status, msg := clarion.TokenValido(w, r)
+	if !status {
+		http.Error(w, fmt.Sprintf("erro ao validar token: %v", msg), http.StatusUnauthorized)
+		return
+	}
+
+	// Parse o corpo da requisição
+	var cc models.CostCenterVerifyExistRequest
+
+	err := json.NewDecoder(r.Body).Decode(&cc)
+	if err != nil {
+		http.Error(w, "Erro ao ler o corpo da requisição", http.StatusBadRequest)
+		return
+	}
+
+	// fmt.Println("email", email)
+	// Conectar ao MongoDB
+	client, err := db.ConnectMongoDB(clarion.ConectionString)
+	if err != nil {
+		http.Error(w, "Erro ao conectar ao banco de dados", http.StatusInternalServerError)
+		return
+	}
+	defer db.CloseMongoDB(client)
+
+	// Obter a coleção de usuários
+	collection := db.GetCollection(client, "clarion", "costCenter")
+	// filter := bson.D{
+	// 	{Key: "$or", Value: bson.A{
+	// 		bson.D{{Key: "email", Value: userName}},
+	// 	}},
+	// }
+
+	fmt.Println("codCostCenter", cc)
+
+	filter := bson.D{{Key: "codCostCenter", Value: cc.CodCostCenter}}
+
+	var result bson.M
+	err = collection.FindOne(context.Background(), filter).Decode(&result)
+
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			clarion.FormataRetornoHTTP(w, false, http.StatusOK)
+			return
+		}
+		http.Error(w, "Erro interno", http.StatusInternalServerError)
+		return
+	}
+
+	// Se encontrou um documento, retorna true
+	clarion.FormataRetornoHTTP(w, true, http.StatusOK)
+
+}
+
+func SearchCostCentersHandler(w http.ResponseWriter, r *http.Request) {
 	// Verificar se a requisição é do tipo POST
 	if r.Method != http.MethodPost {
 		http.Error(w, "Método não permitido", http.StatusMethodNotAllowed)
@@ -261,14 +348,12 @@ func SearchMovementsHandler(w http.ResponseWriter, r *http.Request) {
 	defer client.Disconnect(context.Background())
 
 	// Definir estrutura para receber os parâmetros
-
 	var request struct {
-		DtMovement   *string  `json:"dtMovement"`
-		CodDaily     *string  `json:"codDaily"`
-		CodDocuments []string `json:"codDocument"`
-		CodAccount   *string  `json:"codAccount"`
-		Page         int64    `json:"page"`
-		Limit        int64    `json:"limit"`
+		CodCostCenter *string                `json:"codCostCenter"`
+		Description   *string                `json:"description"`
+		CostCenterSub []models.CostCenterSub `json:"costCenterSub"`
+		Page          int64                  `json:"page"`
+		Limit         int64                  `json:"limit"`
 	}
 
 	// Decodificar o corpo da requisição JSON
@@ -288,19 +373,19 @@ func SearchMovementsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Buscar usuários com paginação
-	movements, total, err := SearchMovements(client, clarion.DBName, "movement", request.CodDaily, request.CodAccount, request.CodDocuments, request.Page, request.Limit)
+	costCenters, total, err := SearchCostsCenter(client, clarion.DBName, "costCenter", request.CodCostCenter, request.Page, request.Limit)
 	if err != nil {
-		http.Error(w, "Erro ao buscar movimento", http.StatusInternalServerError)
+		http.Error(w, "Erro ao buscar centros de custo", http.StatusInternalServerError)
 		return
 	}
 
 	// Criar resposta JSON com paginação
 	response := map[string]any{
-		"total":     total,
-		"page":      request.Page,
-		"limit":     request.Limit,
-		"pages":     (total + request.Limit - 1) / request.Limit, // Número total de páginas
-		"movements": movements,
+		"total":      total,
+		"page":       request.Page,
+		"limit":      request.Limit,
+		"pages":      (total + request.Limit - 1) / request.Limit, // Número total de páginas
+		"costCentes": costCenters,
 	}
 
 	// Retornar resposta JSON

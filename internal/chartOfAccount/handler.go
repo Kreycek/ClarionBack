@@ -394,10 +394,7 @@ func VerifyExistChartOfAccountHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("account", account)
 
 	filter := bson.D{
-		{Key: "codAccount", Value: bson.M{
-			"$regex":   account.CodAccount,
-			"$options": "i", // Ignora diferença entre maiúsculas e minúsculas
-		}},
+		{Key: "codAccount", Value: account.CodAccount},
 	}
 
 	var result bson.M
