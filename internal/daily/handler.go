@@ -130,7 +130,7 @@ func GetDailyByIdHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Buscar o usuário no banco de dados pelo ID
-	user, err := GetDailyByID(client, clarion.DBName, "daily", id)
+	daily, err := GetDailyByID(client, clarion.DBName, "daily", id)
 	if err != nil {
 		http.Error(w, "Erro ao buscar diários", http.StatusInternalServerError)
 		return
@@ -141,7 +141,7 @@ func GetDailyByIdHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 
 	// Enviar o usuário como resposta JSON
-	if err := json.NewEncoder(w).Encode(user); err != nil {
+	if err := json.NewEncoder(w).Encode(daily); err != nil {
 		log.Printf("erro ao codificar resposta JSON: %v", err)
 		http.Error(w, "Erro ao codificar resposta", http.StatusInternalServerError)
 	}

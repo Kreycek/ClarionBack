@@ -85,11 +85,11 @@ func GetAllCostCentersHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Criar resposta JSON com paginação
 	response := map[string]any{
-		"total":        total,
-		"page":         page,
-		"limit":        limit,
-		"pages":        (total + limit - 1) / limit, // Calcula o número total de páginas
-		"constCenters": costCenters,
+		"total":       total,
+		"page":        page,
+		"limit":       limit,
+		"pages":       (total + limit - 1) / limit, // Calcula o número total de páginas
+		"costCenters": costCenters,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -130,7 +130,7 @@ func GetCostCenerByIdHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Buscar o usuário no banco de dados pelo ID
-	user, err := GetCostCenterByID(client, clarion.DBName, "costCenter", id)
+	costCenters, err := GetCostCenterByID(client, clarion.DBName, "costCenter", id)
 	if err != nil {
 		http.Error(w, "Erro ao buscar diários", http.StatusInternalServerError)
 		return
@@ -141,7 +141,7 @@ func GetCostCenerByIdHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 
 	// Enviar o usuário como resposta JSON
-	if err := json.NewEncoder(w).Encode(user); err != nil {
+	if err := json.NewEncoder(w).Encode(costCenters); err != nil {
 		log.Printf("erro ao codificar resposta JSON: %v", err)
 		http.Error(w, "Erro ao codificar resposta", http.StatusInternalServerError)
 	}
@@ -362,7 +362,7 @@ func SearchCostCentersHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println(request)
+	fmt.Println(*request.CodCostCenter)
 
 	// Definir valores padrão para paginação
 	if request.Page < 1 {
@@ -381,11 +381,11 @@ func SearchCostCentersHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Criar resposta JSON com paginação
 	response := map[string]any{
-		"total":      total,
-		"page":       request.Page,
-		"limit":      request.Limit,
-		"pages":      (total + request.Limit - 1) / request.Limit, // Número total de páginas
-		"costCentes": costCenters,
+		"total":       total,
+		"page":        request.Page,
+		"limit":       request.Limit,
+		"pages":       (total + request.Limit - 1) / request.Limit, // Número total de páginas
+		"costCenters": costCenters,
 	}
 
 	// Retornar resposta JSON

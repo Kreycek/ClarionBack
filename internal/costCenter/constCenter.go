@@ -39,6 +39,7 @@ func GetCostCenter(client *mongo.Client, dbName, collectionName string) ([]any, 
 			"codCostCenter": cc.CodCostCenter,
 			"description":   cc.Description,
 			"costCenterSub": cc.CostCenterSub,
+			"active":        cc.Active,
 		})
 
 	}
@@ -86,9 +87,10 @@ func GetAllCostCenter(client *mongo.Client, dbName, collectionName string, page,
 		// Adiciona os usuários formatados
 		ccs = append(ccs, map[string]any{
 			"ID":            cc.ID.Hex(), // Agora o campo ID é uma string
-			"codCostCenter": cc.CodCostCenter,
-			"description":   cc.Description,
-			"costCenterSub": cc.CostCenterSub,
+			"CodCostCenter": cc.CodCostCenter,
+			"Description":   cc.Description,
+			"CostCenterSub": cc.CostCenterSub,
+			"Active":        cc.Active,
 		})
 	}
 
@@ -130,9 +132,10 @@ func GetCostCenterByID(client *mongo.Client, dbName, collectionName, centerCostI
 	// Retornar o usuário como um mapa
 	constCenters := map[string]any{
 		"ID":            costCenter.ID.Hex(), // Agora o campo ID é uma string
-		"codCostCenter": costCenter.CodCostCenter,
-		"description":   costCenter.Description,
-		"costCenterSub": costCenter.CostCenterSub,
+		"CodCostCenter": costCenter.CodCostCenter,
+		"Description":   costCenter.Description,
+		"CostCenterSub": costCenter.CostCenterSub,
+		"Active":        costCenter.Active,
 	}
 
 	fmt.Println("COAData", constCenters)
@@ -162,7 +165,7 @@ func SearchCostsCenter(client *mongo.Client, dbName, collectionName string, cost
 	// Criando o filtro dinâmico
 	filter := bson.M{}
 	if costCenter != nil && *costCenter != "" {
-		filter["CodCostCenter"] = bson.M{"$regex": *costCenter, "$options": "i"}
+		filter["codCostCenter"] = bson.M{"$regex": *costCenter, "$options": "i"}
 	}
 
 	// Contar total de usuários antes da paginação
@@ -192,9 +195,10 @@ func SearchCostsCenter(client *mongo.Client, dbName, collectionName string, cost
 
 		costCenters = append(costCenters, map[string]any{
 			"ID":            costCenter.ID.Hex(), // Agora o campo ID é uma string
-			"codCostCenter": costCenter.CodCostCenter,
-			"description":   costCenter.Description,
-			"costCenterSub": costCenter.CostCenterSub,
+			"CodCostCenter": costCenter.CodCostCenter,
+			"Description":   costCenter.Description,
+			"CostCenterSub": costCenter.CostCenterSub,
+			"Active":        costCenter.Active,
 		})
 	}
 
