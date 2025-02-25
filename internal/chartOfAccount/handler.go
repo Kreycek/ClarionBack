@@ -139,12 +139,13 @@ func SearchChartOfAccountsHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Definir estrutura para receber os parâmetros
 	var request struct {
-		CodAccount  *string `json:"codAccount"`
-		Description *string `json:"description"`
-		Year        []int   `json:"year"`
-		Type        *string `json:"type"`
-		Page        int64   `json:"page"`
-		Limit       int64   `json:"limit"`
+		CodAccount     *string                `json:"codAccount"`
+		Description    *string                `json:"description"`
+		Year           []int                  `json:"year"`
+		Type           *string                `json:"type"`
+		Page           int64                  `json:"page"`
+		Limit          int64                  `json:"limit"`
+		CostCentersCOA []models.CostCenterCOA `json:"costCenterCOA"`
 	}
 
 	// Decodificar o corpo da requisição JSON
@@ -265,13 +266,14 @@ func UpdateChartOfAccountHandler(w http.ResponseWriter, r *http.Request) {
 	// Criar o objeto de atualização
 	update := bson.M{
 		"$set": bson.M{
-			"codAccount":   coa.CodAccount,
-			"description":  coa.Description,
-			"type":         coa.Type,
-			"year":         coa.Year,
-			"updatedAt":    coa.UpdatedAt,
-			"idUserUpdate": coa.ID.Hex(),
-			"active":       coa.Active,
+			"codAccount":     coa.CodAccount,
+			"description":    coa.Description,
+			"type":           coa.Type,
+			"year":           coa.Year,
+			"updatedAt":      coa.UpdatedAt,
+			"idUserUpdate":   coa.ID.Hex(),
+			"active":         coa.Active,
+			"costCentersCOA": coa.CostCentersCOA,
 		},
 	}
 

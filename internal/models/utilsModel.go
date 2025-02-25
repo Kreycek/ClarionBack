@@ -20,3 +20,8 @@ type CostCenterSub struct {
 	CodCostCenterSub string `json:"codCostCenterSub" bson:"codCostCenterSub"`
 	Description      string `json:"description" bson:"description"`
 }
+
+type CostCenterCOA struct {
+	IdCostCenter      string
+	CodCostCdenterSub []string
+}

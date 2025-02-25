@@ -43,12 +43,13 @@ func GetChartOfAccountByID(client *mongo.Client, dbName, collectionName, chartOf
 
 	// Retornar o usuário como um mapa
 	COAData := map[string]any{
-		"ID":          chartOfAccountID, // Agora o campo ID é uma string
-		"CodAccount":  coa.CodAccount,
-		"Description": coa.Description,
-		"Active":      coa.Active,
-		"Type":        coa.Type,
-		"Year":        coa.Year,
+		"ID":             chartOfAccountID, // Agora o campo ID é uma string
+		"CodAccount":     coa.CodAccount,
+		"Description":    coa.Description,
+		"Active":         coa.Active,
+		"Type":           coa.Type,
+		"Year":           coa.Year,
+		"CostCentersCOA": coa.CostCentersCOA,
 	}
 
 	fmt.Println("COAData", COAData)
@@ -90,12 +91,13 @@ func GetAllChartOfAccount(client *mongo.Client, dbName, collectionName string, p
 
 		// Adiciona os usuários formatados
 		charOfAccounts = append(charOfAccounts, map[string]any{
-			"ID":          charOfAccount.ID.Hex(), // Convertendo para string
-			"CodAccount":  charOfAccount.CodAccount,
-			"Description": charOfAccount.Description,
-			"Year":        charOfAccount.Year,
-			"Type":        charOfAccount.Type,
-			"Active":      charOfAccount.Active,
+			"ID":             charOfAccount.ID.Hex(), // Convertendo para string
+			"CodAccount":     charOfAccount.CodAccount,
+			"Description":    charOfAccount.Description,
+			"Year":           charOfAccount.Year,
+			"Type":           charOfAccount.Type,
+			"Active":         charOfAccount.Active,
+			"CostCentersCOA": charOfAccount.CostCentersCOA,
 		})
 	}
 
@@ -151,12 +153,13 @@ func SearchChartOfAccounts(client *mongo.Client, dbName, collectionName string, 
 		}
 
 		charOfAccounts = append(charOfAccounts, map[string]any{
-			"ID":          charOfAccount.ID.Hex(), // Convertendo para string
-			"CodAccount":  charOfAccount.CodAccount,
-			"Description": charOfAccount.Description,
-			"Year":        charOfAccount.Year,
-			"Type":        charOfAccount.Type,
-			"Active":      charOfAccount.Active,
+			"ID":             charOfAccount.ID.Hex(), // Convertendo para string
+			"CodAccount":     charOfAccount.CodAccount,
+			"Description":    charOfAccount.Description,
+			"Year":           charOfAccount.Year,
+			"Type":           charOfAccount.Type,
+			"Active":         charOfAccount.Active,
+			"CostCentersCOA": charOfAccount.CostCentersCOA,
 		})
 	}
 
