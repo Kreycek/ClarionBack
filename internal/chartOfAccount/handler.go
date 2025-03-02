@@ -49,18 +49,19 @@ func GetChartOfAccountByIdHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Buscar o usuário no banco de dados pelo ID
-	user, err := GetChartOfAccountByID(client, clarion.DBName, "chartOfAccount", id)
+	coa, err := GetChartOfAccountByID(client, clarion.DBName, "chartOfAccount", id)
 	if err != nil {
 		http.Error(w, "Erro ao buscar plano de contas", http.StatusInternalServerError)
 		return
 	}
 
+	fmt.Println("asdad", coa)
 	// Configurar o cabeçalho da resposta como JSON
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
 	// Enviar o usuário como resposta JSON
-	if err := json.NewEncoder(w).Encode(user); err != nil {
+	if err := json.NewEncoder(w).Encode(coa); err != nil {
 		log.Printf("erro ao codificar resposta JSON: %v", err)
 		http.Error(w, "Erro ao codificar resposta", http.StatusInternalServerError)
 	}

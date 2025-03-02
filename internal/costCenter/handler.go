@@ -228,11 +228,11 @@ func UpdateCostCenterHandler(w http.ResponseWriter, r *http.Request) {
 	update := bson.M{
 		"$set": bson.M{
 
-			"codCostCenter": costCenter.CodCostCenter,
-			"description":   costCenter.Description,
-			"costCenterSub": costCenter.CostCenterSub,
-			"idUserUpdate":  costCenter.ID.Hex(),
-			"active":        costCenter.Active,
+			"codCostCenter":       costCenter.CodCostCenter,
+			"description":         costCenter.Description,
+			"costCenterSecondary": costCenter.CostCenterSecondary,
+			"idUserUpdate":        costCenter.ID.Hex(),
+			"active":              costCenter.Active,
 		},
 	}
 
@@ -349,11 +349,11 @@ func SearchCostCentersHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Definir estrutura para receber os parâmetros
 	var request struct {
-		CodCostCenter *string                `json:"codCostCenter"`
-		Description   *string                `json:"description"`
-		CostCenterSub []models.CostCenterSub `json:"costCenterSub"`
-		Page          int64                  `json:"page"`
-		Limit         int64                  `json:"limit"`
+		CodCostCenter       *string                      `json:"codCostCenter"`
+		Description         *string                      `json:"description"`
+		CostCenterSecondary []models.CostCenterSecondary `json:"costCenterSecondary"`
+		Page                int64                        `json:"page"`
+		Limit               int64                        `json:"limit"`
 	}
 
 	// Decodificar o corpo da requisição JSON

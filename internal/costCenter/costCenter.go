@@ -35,11 +35,11 @@ func GetCostCenter(client *mongo.Client, dbName, collectionName string) ([]any, 
 		ccID := cc.ID
 		// Preenche o usuário com o ID convertido em string
 		dadosBanco = append(dadosBanco, map[string]any{
-			"ID":            ccID, // Agora o campo ID é uma string
-			"codCostCenter": cc.CodCostCenter,
-			"description":   cc.Description,
-			"costCenterSub": cc.CostCenterSub,
-			"active":        cc.Active,
+			"ID":                  ccID, // Agora o campo ID é uma string
+			"codCostCenter":       cc.CodCostCenter,
+			"description":         cc.Description,
+			"costCenterSecondary": cc.CostCenterSecondary,
+			"active":              cc.Active,
 		})
 
 	}
@@ -86,11 +86,11 @@ func GetAllCostCenter(client *mongo.Client, dbName, collectionName string, page,
 
 		// Adiciona os usuários formatados
 		ccs = append(ccs, map[string]any{
-			"ID":            cc.ID.Hex(), // Agora o campo ID é uma string
-			"CodCostCenter": cc.CodCostCenter,
-			"Description":   cc.Description,
-			"CostCenterSub": cc.CostCenterSub,
-			"Active":        cc.Active,
+			"ID":                  cc.ID.Hex(), // Agora o campo ID é uma string
+			"CodCostCenter":       cc.CodCostCenter,
+			"Description":         cc.Description,
+			"CostCenterSecondary": cc.CostCenterSecondary,
+			"Active":              cc.Active,
 		})
 	}
 
@@ -131,11 +131,11 @@ func GetCostCenterByID(client *mongo.Client, dbName, collectionName, centerCostI
 
 	// Retornar o usuário como um mapa
 	constCenters := map[string]any{
-		"ID":            costCenter.ID.Hex(), // Agora o campo ID é uma string
-		"CodCostCenter": costCenter.CodCostCenter,
-		"Description":   costCenter.Description,
-		"CostCenterSub": costCenter.CostCenterSub,
-		"Active":        costCenter.Active,
+		"ID":                  costCenter.ID.Hex(), // Agora o campo ID é uma string
+		"CodCostCenter":       costCenter.CodCostCenter,
+		"Description":         costCenter.Description,
+		"CostCenterSecondary": costCenter.CostCenterSecondary,
+		"Active":              costCenter.Active,
 	}
 
 	fmt.Println("COAData", constCenters)
@@ -194,11 +194,11 @@ func SearchCostsCenter(client *mongo.Client, dbName, collectionName string, cost
 		}
 
 		costCenters = append(costCenters, map[string]any{
-			"ID":            costCenter.ID.Hex(), // Agora o campo ID é uma string
-			"CodCostCenter": costCenter.CodCostCenter,
-			"Description":   costCenter.Description,
-			"CostCenterSub": costCenter.CostCenterSub,
-			"Active":        costCenter.Active,
+			"ID":                  costCenter.ID.Hex(), // Agora o campo ID é uma string
+			"CodCostCenter":       costCenter.CodCostCenter,
+			"Description":         costCenter.Description,
+			"CostCenterSecondary": costCenter.CostCenterSecondary,
+			"Active":              costCenter.Active,
 		})
 	}
 

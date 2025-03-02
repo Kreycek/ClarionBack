@@ -16,12 +16,12 @@ type MovementAccount struct {
 	CreditValue time.Time `json:"creditValue" bson:"creditValue"`
 }
 
-type CostCenterSub struct {
-	CodCostCenterSub string `json:"codCostCenterSub" bson:"codCostCenterSub"`
-	Description      string `json:"description" bson:"description"`
+type CostCenterSecondary struct {
+	CodCostCenterSecondary string `json:"codCostCenterSecondary" bson:"codCostCenterSecondary"`
+	Description            string `json:"description" bson:"description"`
 }
 
 type CostCenterCOA struct {
-	IdCostCenter      string
-	CodCostCdenterSub []string
+	IdCostCenter         string   `json:"idCostCenter" bson:"idCostCenter"`
+	CostCentersSecondary []string `json:"costCentersSecondary" bson:"costCentersSecondary"`
 }

@@ -52,8 +52,6 @@ func GetChartOfAccountByID(client *mongo.Client, dbName, collectionName, chartOf
 		"CostCentersCOA": coa.CostCentersCOA,
 	}
 
-	fmt.Println("COAData", COAData)
-
 	return COAData, nil
 }
 
