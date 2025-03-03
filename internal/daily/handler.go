@@ -18,6 +18,39 @@ import (
 )
 
 // Função de handler para a rota GET /dailys apenas diários sem documentos
+func GetAllOnlyDailyActiveHandler(w http.ResponseWriter, r *http.Request) {
+
+	status, msg := clarion.TokenValido(w, r)
+
+	if !status {
+		http.Error(w, fmt.Sprintf("erro ao buscar usuários: %v", msg), http.StatusUnauthorized)
+		return
+	}
+
+	// Conectar ao MongoDB
+	client, err := db.ConnectMongoDB(clarion.ConectionString)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("erro ao conectar ao MongoDB: %v", err), http.StatusInternalServerError)
+		return
+	}
+	defer db.CloseMongoDB(client)
+
+	// Obter todos os usuários
+	dailys, err := GetDailysActive(client, clarion.DBName, "daily")
+	if err != nil {
+		http.Error(w, fmt.Sprintf("erro ao buscar usuários: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	// Retornar a resposta com os dados dos usuários
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(dailys); err != nil {
+		log.Printf("erro ao codificar resposta JSON: %v", err)
+	}
+}
+
+// Função de handler para a rota GET /dailys apenas diários sem documentos
 func GetAllOnlyDailysHandler(w http.ResponseWriter, r *http.Request) {
 
 	status, msg := clarion.TokenValido(w, r)

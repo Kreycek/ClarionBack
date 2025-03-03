@@ -68,6 +68,7 @@ func main() {
 	http.HandleFunc("/UpdateDaily", daily.UpdateDailyHandler)
 	http.HandleFunc("/VerifyExistDaily", daily.VerifyExistDailyHandler)
 	http.HandleFunc("/SearchDailys", daily.SearchDailysHandler)
+	http.HandleFunc("/GetAllOnlyDailyActive", daily.GetAllOnlyDailyActiveHandler)
 
 	//	COMPANYS
 	http.HandleFunc("/GetAllCompanys", company.GetAllCompanysHandler)
