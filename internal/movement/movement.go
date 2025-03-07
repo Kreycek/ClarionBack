@@ -49,7 +49,7 @@ func GetAllMovements(client *mongo.Client, dbName, collectionName string, page, 
 			"ID":          movement.ID.Hex(), // Agora o campo ID é uma string
 			"CodDaily":    movement.CodDaily,
 			"CodDocument": movement.CodDocument,
-			"Accounts":    movement.Accounts,
+			"Movements":   movement.Movements,
 			"IVA":         movement.IVA,
 		})
 	}
@@ -95,7 +95,7 @@ func GetMovementByID(client *mongo.Client, dbName, collectionName, movementId st
 		"ID":          movement.ID.Hex(), // Agora o campo ID é uma string
 		"CodDaily":    movement.CodDaily,
 		"CodDocument": movement.CodDocument,
-		"Accounts":    movement.Accounts,
+		"Movements":   movement.Movements,
 		"IVA":         movement.IVA,
 	}
 
@@ -171,7 +171,7 @@ func SearchMovements(client *mongo.Client, dbName, collectionName string, CodDai
 			"ID":          movement.ID.Hex(), // Agora o campo ID é uma string
 			"CodDaily":    movement.CodDaily,
 			"CodDocument": movement.CodDocument,
-			"Accounts":    movement.Accounts,
+			"Movements":   movement.Movements,
 			"IVA":         movement.IVA,
 		})
 	}

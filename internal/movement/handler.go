@@ -197,7 +197,7 @@ func UpdateMovementHandler(w http.ResponseWriter, r *http.Request) {
 			"ID":           movement.ID.Hex(), // Agora o campo ID é uma string
 			"CodDaily":     movement.CodDaily,
 			"CodDocument":  movement.CodDocument,
-			"Accounts":     movement.Accounts,
+			"Movements":    movement.Movements,
 			"IVA":          movement.IVA,
 			"updatedAt":    movement.UpdatedAt,
 			"idUserUpdate": movement.ID.Hex(),

@@ -11,7 +11,7 @@ type Movement struct {
 	DtMovimento   string             `json:"dtMovimento" bson:"dtMovimento"`
 	CodDaily      string             `json:"codDaily" bson:"codDaily"`
 	CodDocument   string             `json:"codDocument" bson:"codDocument"`
-	Accounts      []MovementAccount  `json:"accounts" bson:"accounts"`
+	Movements     []Movements        `json:"movements" bson:"movements"`
 	IVA           string             `json:"iva" bson:"iva"`
 	Active        bool               `json:"active" bson:"active,omitempty"`
 	CreatedAt     time.Time          `json:"createdAt" bson:"createdAt,omitempty"`

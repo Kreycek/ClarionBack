@@ -9,11 +9,12 @@ type Exercise struct {
 	DtAdd      time.Time `json:"dtAdd" bson:"dtAdd"`
 }
 
-type MovementAccount struct {
+type Movements struct {
 	DtMovement  int       `json:"dtMovement" bson:"dtMovement"`
 	CodAccount  string    `json:"codAccount" bson:"codAccount"`
 	DebitValue  string    `json:"debitValue" bson:"debitValue"`
 	CreditValue time.Time `json:"creditValue" bson:"creditValue"`
+	Active      bool      `json:"active" bson:"active"`
 }
 
 type CostCenterSecondary struct {
