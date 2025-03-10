@@ -8,11 +8,10 @@ import (
 
 type Movement struct {
 	ID            primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
-	DtMovimento   string             `json:"dtMovimento" bson:"dtMovimento"`
+	Date          time.Time          `json:"date" bson:"date,omitempt"`
 	CodDaily      string             `json:"codDaily" bson:"codDaily"`
 	CodDocument   string             `json:"codDocument" bson:"codDocument"`
-	Movements     []Movements        `json:"movements" bson:"movements"`
-	IVA           string             `json:"iva" bson:"iva"`
+	Movements     []Movements        `json:"movements" bson:"movements,omitempty"`
 	Active        bool               `json:"active" bson:"active,omitempty"`
 	CreatedAt     time.Time          `json:"createdAt" bson:"createdAt,omitempty"`
 	UpdatedAt     time.Time          `json:"updatedAt" bson:"updatedAt,omitempty"`

@@ -6,6 +6,8 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -49,8 +51,9 @@ func GetAllMovements(client *mongo.Client, dbName, collectionName string, page, 
 			"ID":          movement.ID.Hex(), // Agora o campo ID é uma string
 			"CodDaily":    movement.CodDaily,
 			"CodDocument": movement.CodDocument,
+			"Date":        movement.Date,
+			"Active":      movement.Active,
 			"Movements":   movement.Movements,
-			"IVA":         movement.IVA,
 		})
 	}
 
@@ -96,7 +99,8 @@ func GetMovementByID(client *mongo.Client, dbName, collectionName, movementId st
 		"CodDaily":    movement.CodDaily,
 		"CodDocument": movement.CodDocument,
 		"Movements":   movement.Movements,
-		"IVA":         movement.IVA,
+		"Date":        movement.Date,
+		"Active":      movement.Active,
 	}
 
 	fmt.Println("COAData", movements)
@@ -120,26 +124,73 @@ func InsertMovement(client *mongo.Client, dbName, collectionName string, movemen
 	return nil
 }
 
-func SearchMovements(client *mongo.Client, dbName, collectionName string, CodDaily, CodAccount *string, documents []string, page, limit int64) ([]any, int64, error) {
+func SearchMovements(client *mongo.Client, dbName, collectionName string, typeSearchDate int, CodDaily, CodDocument, date *string, page, limit int64) ([]any, int64, error) {
 	collection := client.Database(dbName).Collection(collectionName)
 
 	// Criando o filtro dinâmico
 	filter := bson.M{}
 	if CodDaily != nil && *CodDaily != "" {
-		filter["codDaily"] = bson.M{"$regex": *CodDaily, "$options": "i"}
+		filter["codDaily"] = *CodDaily // Apenas atribui diretamente
 	}
 
-	if len(documents) > 0 {
-		var regexFilters []bson.M
-		for _, doc := range documents {
-			regexFilters = append(regexFilters, bson.M{"codDocument": bson.M{"$regex": doc, "$options": "i"}})
+	if CodDocument != nil && *CodDocument != "" {
+		// filter["codDocument"] = bson.M{"$regex": *CodDocument, "$options": "i"}
+		filter["codDocument"] = *CodDocument // Apenas atribui diretamente
+	}
+
+	var parsedTime time.Time // Declara parsedTime fora do if
+	var err error            // Declara err fora do if
+
+	if date != nil && *date != "" {
+		// Convertendo string para tempo (assumindo que o formato esperado seja YYYY-MM-DD ou YYYY-MM)
+		layoutDay := "2006-01-02"
+		layoutMonth := "2006-01"
+
+		if typeSearchDate == 1 {
+			// Corrigido para usar a variável declarada fora do if
+			parsedTime, err = time.Parse(layoutDay, *date)
+			if err != nil {
+				return nil, 0, fmt.Errorf("formato de data inválido, use YYYY-MM-DD")
+			}
+
+			startOfDay := parsedTime
+			endOfDay := startOfDay.Add(24 * time.Hour)
+
+			// Filtro no MongoDB com o tipo time.Time
+			filter["date"] = bson.M{
+				"$gte": startOfDay,
+				"$lt":  endOfDay,
+			}
+
+		} else if typeSearchDate == 2 {
+
+			trimmedDate := strings.TrimSpace(*date)
+
+			// Verifique se a data tem dia (caso sim, remova)
+			if strings.Count(trimmedDate, "-") == 2 { // Caso seja YYYY-MM-DD
+				// Apenas mantemos ano e mês (removemos o dia)
+				trimmedDate = trimmedDate[:7] // Apenas "YYYY-MM"
+			}
+
+			fmt.Println("Data de mês/ano a ser analisada:", trimmedDate)
+
+			// Tenta analisar como YYYY-MM
+			parsedTime, err = time.Parse(layoutMonth, trimmedDate)
+			if err != nil {
+				return nil, 0, fmt.Errorf("formato de data inválido para mês/ano, use YYYY-MM: %v", err)
+			}
+
+			firstDay := parsedTime
+			lastDay := firstDay.AddDate(0, 1, 0).Add(-time.Second) // Último segundo do mês
+
+			filter["date"] = bson.M{
+				"$gte": firstDay,
+				"$lt":  lastDay,
+			}
+		} else {
+			// Caso nenhum tipo de pesquisa válido
+			return nil, 0, fmt.Errorf("tipo de pesquisa de data inválido")
 		}
-
-		filter["$or"] = regexFilters
-	}
-
-	if CodAccount != nil && *CodAccount != "" {
-		filter["account.codAccount"] = bson.M{"$regex": *CodAccount, "$options": "i"}
 	}
 
 	// Contar total de usuários antes da paginação
@@ -172,9 +223,12 @@ func SearchMovements(client *mongo.Client, dbName, collectionName string, CodDai
 			"CodDaily":    movement.CodDaily,
 			"CodDocument": movement.CodDocument,
 			"Movements":   movement.Movements,
-			"IVA":         movement.IVA,
+			"Date":        movement.Date,
+			"Active":      movement.Active,
 		})
 	}
+
+	fmt.Println("Total registros", total)
 
 	// Retorna usuários e total de registros
 	return movements, total, nil

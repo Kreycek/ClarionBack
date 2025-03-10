@@ -194,11 +194,10 @@ func UpdateMovementHandler(w http.ResponseWriter, r *http.Request) {
 	// Criar o objeto de atualização
 	update := bson.M{
 		"$set": bson.M{
-			"ID":           movement.ID.Hex(), // Agora o campo ID é uma string
-			"CodDaily":     movement.CodDaily,
-			"CodDocument":  movement.CodDocument,
+
+			"codDaily":     movement.CodDaily,
+			"codDocument":  movement.CodDocument,
 			"Movements":    movement.Movements,
-			"IVA":          movement.IVA,
 			"updatedAt":    movement.UpdatedAt,
 			"idUserUpdate": movement.ID.Hex(),
 			"active":       movement.Active,
@@ -263,12 +262,12 @@ func SearchMovementsHandler(w http.ResponseWriter, r *http.Request) {
 	// Definir estrutura para receber os parâmetros
 
 	var request struct {
-		DtMovement   *string  `json:"dtMovement"`
-		CodDaily     *string  `json:"codDaily"`
-		CodDocuments []string `json:"codDocument"`
-		CodAccount   *string  `json:"codAccount"`
-		Page         int64    `json:"page"`
-		Limit        int64    `json:"limit"`
+		CodDaily       *string `json:"codDaily,omitempty"`
+		CodDocument    *string `json:"codDocument,omitempty"`
+		DateMovement   *string `json:"dateMovement,omitempty"`
+		TypeSearchDate int     `json:"typeSearchDate"`
+		Page           int64   `json:"page"`
+		Limit          int64   `json:"limit"`
 	}
 
 	// Decodificar o corpo da requisição JSON
@@ -277,7 +276,9 @@ func SearchMovementsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println(request)
+	fmt.Println(*request.CodDaily)
+	fmt.Println("DATA", *request.DateMovement)
+	fmt.Println("TypeSearchDate", request.TypeSearchDate)
 
 	// Definir valores padrão para paginação
 	if request.Page < 1 {
@@ -288,7 +289,7 @@ func SearchMovementsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Buscar usuários com paginação
-	movements, total, err := SearchMovements(client, clarion.DBName, "movement", request.CodDaily, request.CodAccount, request.CodDocuments, request.Page, request.Limit)
+	movements, total, err := SearchMovements(client, clarion.DBName, "movement", request.TypeSearchDate, request.CodDaily, request.CodDocument, request.DateMovement, request.Page, request.Limit)
 	if err != nil {
 		http.Error(w, "Erro ao buscar movimento", http.StatusInternalServerError)
 		return

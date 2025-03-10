@@ -1,6 +1,10 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 type Exercise struct {
 	Year       int       `json:"year" bson:"year"`
@@ -10,11 +14,20 @@ type Exercise struct {
 }
 
 type Movements struct {
-	DtMovement  int       `json:"dtMovement" bson:"dtMovement"`
-	CodAccount  string    `json:"codAccount" bson:"codAccount"`
-	DebitValue  string    `json:"debitValue" bson:"debitValue"`
-	CreditValue time.Time `json:"creditValue" bson:"creditValue"`
-	Active      bool      `json:"active" bson:"active"`
+	Order          int             `json:"order" bson:"order,omitempty"`
+	Date           time.Time       `json:"date" bson:"date,omitempty"`
+	Description    string          `json:"description" bson:"description,omitempty"`
+	Active         bool            `json:"active" bson:"active"`
+	MovementsItens []MovementItens `json:"movementsItens" bson:"movementsItens,omitempty"`
+}
+
+type MovementItens struct {
+	Date          time.Time            `json:"date" bson:"date"`
+	CodAccount    string               `json:"codAccount" bson:"codAccount,omitempty"`
+	DebitValue    primitive.Decimal128 `json:"debitValue" bson:"debitValue,omitempty"`
+	CreditValue   primitive.Decimal128 `json:"creditValue" bson:"creditValue,omitempty"`
+	Active        bool                 `json:"active" bson:"active,omitempty"`
+	CodAccountIva string               `json:"codAccountIva" bson:"codAccountIva,omitempty"`
 }
 
 type CostCenterSecondary struct {
