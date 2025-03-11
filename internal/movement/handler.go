@@ -195,12 +195,15 @@ func UpdateMovementHandler(w http.ResponseWriter, r *http.Request) {
 	update := bson.M{
 		"$set": bson.M{
 
-			"codDaily":     movement.CodDaily,
-			"codDocument":  movement.CodDocument,
-			"Movements":    movement.Movements,
-			"updatedAt":    movement.UpdatedAt,
-			"idUserUpdate": movement.ID.Hex(),
-			"active":       movement.Active,
+			"codDaily":        movement.CodDaily,
+			"codDocument":     movement.CodDocument,
+			"movements":       movement.Movements,
+			"updatedAt":       movement.UpdatedAt,
+			"idUserUpdate":    movement.ID.Hex(),
+			"active":          movement.Active,
+			"companyFullData": movement.CompanyFullData,
+			"companyId":       movement.CompanyId,
+			"companyDocument": movement.CompanyDocument,
 		},
 	}
 

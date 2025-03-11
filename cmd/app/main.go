@@ -77,6 +77,7 @@ func main() {
 	http.HandleFunc("/UpdateCompany", company.UpdateCompanyHandler)
 	http.HandleFunc("/VerifyExistCompany", company.VerifyExistCompanyHandler)
 	http.HandleFunc("/SearchCompanys", company.SearchCompanysHandler)
+	http.HandleFunc("/GetAllAutoComplete", company.GetAllAutoCompletesHandler)
 
 	//MOVIMENTO
 	http.HandleFunc("/GetAllMovements", movement.GetAllMovementsHandler)

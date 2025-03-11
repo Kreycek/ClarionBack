@@ -13,6 +13,46 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+func GetAllAutoComplete(client *mongo.Client, dbName, collectionName, name string) ([]any, error) {
+	collection := db.GetCollection(client, dbName, collectionName)
+
+	// Criar o filtro para pesquisar pelo nome
+	filter := bson.M{}
+	if name != "" {
+		filter["name"] = bson.M{"$regex": name, "$options": "i"} // Busca insensível a maiúsculas e minúsculas
+	}
+
+	// Buscar todas as empresas sem paginação
+	cursor, err := collection.Find(context.Background(), filter)
+	if err != nil {
+		return nil, fmt.Errorf("erro ao buscar empresas: %v", err)
+	}
+	defer cursor.Close(context.Background())
+
+	var companies []any
+	for cursor.Next(context.Background()) {
+		var company models.Company
+		if err := cursor.Decode(&company); err != nil {
+			return nil, fmt.Errorf("erro ao decodificar empresa: %v", err)
+		}
+
+		// Adiciona as empresas formatadas
+		companies = append(companies, map[string]any{
+			"ID":         company.ID.Hex(), // Convertendo para string
+			"CodCompany": company.CodCompany,
+			"Name":       company.Name,
+			"Documents":  company.Documents,
+			"Active":     company.Active,
+		})
+	}
+
+	if err := cursor.Err(); err != nil {
+		return nil, fmt.Errorf("erro ao iterar no cursor: %v", err)
+	}
+
+	return companies, nil
+}
+
 func GetAllCompany(client *mongo.Client, dbName, collectionName string, page, limit int) ([]any, int, error) {
 	collection := db.GetCollection(client, dbName, collectionName)
 

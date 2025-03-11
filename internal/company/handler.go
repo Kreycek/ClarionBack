@@ -17,6 +17,43 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+func GetAllAutoCompletesHandler(w http.ResponseWriter, r *http.Request) {
+	status, msg := clarion.TokenValido(w, r)
+	if !status {
+		http.Error(w, fmt.Sprintf("erro ao buscar empresas: %v", msg), http.StatusUnauthorized)
+		return
+	}
+
+	client, err := db.ConnectMongoDB(clarion.ConectionString)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("erro ao conectar ao MongoDB: %v", err), http.StatusInternalServerError)
+		return
+	}
+	defer db.CloseMongoDB(client)
+
+	// Obter parâmetro de pesquisa por nome
+	query := r.URL.Query()
+	name := query.Get("name")
+
+	// Obter empresas filtradas por nome (ou todas se name estiver vazio)
+	companys, err := GetAllAutoComplete(client, clarion.DBName, "company", name)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("erro ao buscar empresas: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	// Criar resposta JSON
+	response := map[string]any{
+		"companys": companys,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		log.Printf("erro ao codificar resposta JSON: %v", err)
+	}
+}
+
 func GetAllCompanysHandler(w http.ResponseWriter, r *http.Request) {
 	status, msg := clarion.TokenValido(w, r)
 	if !status {

@@ -48,12 +48,15 @@ func GetAllMovements(client *mongo.Client, dbName, collectionName string, page, 
 
 		// Adiciona os usuários formatados
 		movements = append(movements, map[string]any{
-			"ID":          movement.ID.Hex(), // Agora o campo ID é uma string
-			"CodDaily":    movement.CodDaily,
-			"CodDocument": movement.CodDocument,
-			"Date":        movement.Date,
-			"Active":      movement.Active,
-			"Movements":   movement.Movements,
+			"ID":              movement.ID.Hex(), // Agora o campo ID é uma string
+			"CodDaily":        movement.CodDaily,
+			"CodDocument":     movement.CodDocument,
+			"Date":            movement.Date,
+			"Active":          movement.Active,
+			"Movements":       movement.Movements,
+			"CompanyFullData": movement.CompanyFullData,
+			"CompanyId":       movement.CompanyId,
+			"CompanyDocument": movement.CompanyDocument,
 		})
 	}
 
@@ -95,12 +98,15 @@ func GetMovementByID(client *mongo.Client, dbName, collectionName, movementId st
 
 	// Retornar o usuário como um mapa
 	movements := map[string]any{
-		"ID":          movement.ID.Hex(), // Agora o campo ID é uma string
-		"CodDaily":    movement.CodDaily,
-		"CodDocument": movement.CodDocument,
-		"Movements":   movement.Movements,
-		"Date":        movement.Date,
-		"Active":      movement.Active,
+		"ID":              movement.ID.Hex(), // Agora o campo ID é uma string
+		"CodDaily":        movement.CodDaily,
+		"CodDocument":     movement.CodDocument,
+		"Movements":       movement.Movements,
+		"Date":            movement.Date,
+		"Active":          movement.Active,
+		"CompanyFullData": movement.CompanyFullData,
+		"CompanyId":       movement.CompanyId,
+		"CompanyDocument": movement.CompanyDocument,
 	}
 
 	fmt.Println("COAData", movements)
@@ -219,12 +225,15 @@ func SearchMovements(client *mongo.Client, dbName, collectionName string, typeSe
 		}
 
 		movements = append(movements, map[string]any{
-			"ID":          movement.ID.Hex(), // Agora o campo ID é uma string
-			"CodDaily":    movement.CodDaily,
-			"CodDocument": movement.CodDocument,
-			"Movements":   movement.Movements,
-			"Date":        movement.Date,
-			"Active":      movement.Active,
+			"ID":              movement.ID.Hex(), // Agora o campo ID é uma string
+			"CodDaily":        movement.CodDaily,
+			"CodDocument":     movement.CodDocument,
+			"Movements":       movement.Movements,
+			"Date":            movement.Date,
+			"Active":          movement.Active,
+			"CompanyFullData": movement.CompanyFullData,
+			"CompanyId":       movement.CompanyId,
+			"CompanyDocument": movement.CompanyDocument,
 		})
 	}
 
