@@ -13,6 +13,47 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+func GetAllCoaAutoComplete(client *mongo.Client, dbName, collectionName, codAccount string) ([]any, error) {
+	collection := db.GetCollection(client, dbName, collectionName)
+
+	// Criar o filtro para pesquisar pelo nome
+	filter := bson.M{}
+	if codAccount != "" {
+		filter["codAccount"] = bson.M{
+			"$regex":   "^" + codAccount, // "^" faz o regex buscar só no começo
+			"$options": "i",              // Busca insensível a maiúsculas e minúsculas
+		}
+	}
+
+	// Buscar todas as empresas sem paginação
+	cursor, err := collection.Find(context.Background(), filter)
+	if err != nil {
+		return nil, fmt.Errorf("erro ao buscar empresas: %v", err)
+	}
+	defer cursor.Close(context.Background())
+
+	var charOfAccounts []any
+	for cursor.Next(context.Background()) {
+		var charOfAccount models.ChartOfAccount
+
+		if err := cursor.Decode(&charOfAccount); err != nil {
+			return nil, fmt.Errorf("erro ao decodificar usuário: %v", err)
+		}
+
+		// Adiciona os usuários formatados
+		charOfAccounts = append(charOfAccounts, map[string]any{
+			"CodAccount":  charOfAccount.CodAccount,
+			"Description": charOfAccount.Description,
+		})
+	}
+
+	if err := cursor.Err(); err != nil {
+		return nil, fmt.Errorf("erro ao iterar no cursor: %v", err)
+	}
+
+	return charOfAccounts, nil
+}
+
 func GetChartOfAccountByID(client *mongo.Client, dbName, collectionName, chartOfAccountID string) (map[string]any, error) {
 	collection := client.Database(dbName).Collection(collectionName)
 
@@ -68,8 +109,10 @@ func GetAllChartOfAccount(client *mongo.Client, dbName, collectionName string, p
 		return nil, 0, fmt.Errorf("erro ao contar documentos: %v", err)
 	}
 
+	sort := bson.D{{Key: "codAccount", Value: 1}}
 	// Definir opções de busca com paginação
 	options := options.Find()
+	options.SetSort(sort)
 	options.SetLimit(int64(limit))
 	options.SetSkip(int64((page - 1) * limit))
 
@@ -112,10 +155,10 @@ func SearchChartOfAccounts(client *mongo.Client, dbName, collectionName string, 
 	// Criando o filtro dinâmico
 	filter := bson.M{}
 	if codAccount != nil && *codAccount != "" {
-		filter["codAccount"] = bson.M{"$regex": *codAccount, "$options": "i"}
+		filter["codAccount"] = bson.M{"$regex": "^" + *codAccount, "$options": "i"}
 	}
 	if description != nil && *description != "" {
-		filter["description"] = bson.M{"$regex": *description, "$options": "i"}
+		filter["description"] = bson.M{"$regex": "^" + *description, "$options": "i"}
 	}
 
 	if _type != nil && *_type != "" {
@@ -131,11 +174,17 @@ func SearchChartOfAccounts(client *mongo.Client, dbName, collectionName string, 
 		return nil, 0, err
 	}
 
+	// Definindo ordenação por codAccount (1 = ascendente, -1 = descendente)
+	sort := bson.D{{Key: "codAccount", Value: 1}}
+
 	// Executa a consulta com paginação
 	cursor, err := collection.Find(
 		context.Background(),
 		filter,
-		options.Find().SetSkip(int64((page-1)*limit)).SetLimit(int64(limit)),
+		options.Find().
+			SetSort(sort).
+			SetSkip(int64((page-1)*limit)).
+			SetLimit(int64(limit)),
 	)
 	if err != nil {
 		return nil, 0, err

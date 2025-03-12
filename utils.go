@@ -12,7 +12,7 @@ import (
 
 // Variável global que contém a chave secreta para JWT
 var SecretKey = []byte("my_secret_key")
-var UrlSite = "http://localhost:56486"
+var UrlSite = "http://localhost:49870"
 var ConectionString = "mongodb://admin:secret@localhost:27017"
 var DBName = "clarion"
 

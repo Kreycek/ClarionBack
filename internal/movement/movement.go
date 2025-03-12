@@ -6,8 +6,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strings"
-	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -27,8 +25,11 @@ func GetAllMovements(client *mongo.Client, dbName, collectionName string, page, 
 		return nil, 0, fmt.Errorf("erro ao contar documentos: %v", err)
 	}
 
+	// Definindo ordenação por codAccount (1 = ascendente, -1 = descendente)
+	sort := bson.D{{Key: "date", Value: -1}}
 	// Definir opções de busca com paginação
 	options := options.Find()
+	options.SetSort(sort)
 	options.SetLimit(int64(limit))
 	options.SetSkip(int64((page - 1) * limit))
 
@@ -53,6 +54,8 @@ func GetAllMovements(client *mongo.Client, dbName, collectionName string, page, 
 			"CodDocument":     movement.CodDocument,
 			"Date":            movement.Date,
 			"Active":          movement.Active,
+			"Month":           movement.Month,
+			"Year":            movement.Year,
 			"Movements":       movement.Movements,
 			"CompanyFullData": movement.CompanyFullData,
 			"CompanyId":       movement.CompanyId,
@@ -107,6 +110,8 @@ func GetMovementByID(client *mongo.Client, dbName, collectionName, movementId st
 		"CompanyFullData": movement.CompanyFullData,
 		"CompanyId":       movement.CompanyId,
 		"CompanyDocument": movement.CompanyDocument,
+		"Year":            movement.Year,
+		"Month":           movement.Month,
 	}
 
 	fmt.Println("COAData", movements)
@@ -130,7 +135,7 @@ func InsertMovement(client *mongo.Client, dbName, collectionName string, movemen
 	return nil
 }
 
-func SearchMovements(client *mongo.Client, dbName, collectionName string, typeSearchDate int, CodDaily, CodDocument, date *string, page, limit int64) ([]any, int64, error) {
+func SearchMovements(client *mongo.Client, dbName, collectionName string, month *int, year *int, CodDaily, CodDocument, date *string, page, limit int64) ([]any, int64, error) {
 	collection := client.Database(dbName).Collection(collectionName)
 
 	// Criando o filtro dinâmico
@@ -144,60 +149,70 @@ func SearchMovements(client *mongo.Client, dbName, collectionName string, typeSe
 		filter["codDocument"] = *CodDocument // Apenas atribui diretamente
 	}
 
-	var parsedTime time.Time // Declara parsedTime fora do if
-	var err error            // Declara err fora do if
+	if month != nil && *month != 0 {
 
-	if date != nil && *date != "" {
-		// Convertendo string para tempo (assumindo que o formato esperado seja YYYY-MM-DD ou YYYY-MM)
-		layoutDay := "2006-01-02"
-		layoutMonth := "2006-01"
-
-		if typeSearchDate == 1 {
-			// Corrigido para usar a variável declarada fora do if
-			parsedTime, err = time.Parse(layoutDay, *date)
-			if err != nil {
-				return nil, 0, fmt.Errorf("formato de data inválido, use YYYY-MM-DD")
-			}
-
-			startOfDay := parsedTime
-			endOfDay := startOfDay.Add(24 * time.Hour)
-
-			// Filtro no MongoDB com o tipo time.Time
-			filter["date"] = bson.M{
-				"$gte": startOfDay,
-				"$lt":  endOfDay,
-			}
-
-		} else if typeSearchDate == 2 {
-
-			trimmedDate := strings.TrimSpace(*date)
-
-			// Verifique se a data tem dia (caso sim, remova)
-			if strings.Count(trimmedDate, "-") == 2 { // Caso seja YYYY-MM-DD
-				// Apenas mantemos ano e mês (removemos o dia)
-				trimmedDate = trimmedDate[:7] // Apenas "YYYY-MM"
-			}
-
-			fmt.Println("Data de mês/ano a ser analisada:", trimmedDate)
-
-			// Tenta analisar como YYYY-MM
-			parsedTime, err = time.Parse(layoutMonth, trimmedDate)
-			if err != nil {
-				return nil, 0, fmt.Errorf("formato de data inválido para mês/ano, use YYYY-MM: %v", err)
-			}
-
-			firstDay := parsedTime
-			lastDay := firstDay.AddDate(0, 1, 0).Add(-time.Second) // Último segundo do mês
-
-			filter["date"] = bson.M{
-				"$gte": firstDay,
-				"$lt":  lastDay,
-			}
-		} else {
-			// Caso nenhum tipo de pesquisa válido
-			return nil, 0, fmt.Errorf("tipo de pesquisa de data inválido")
-		}
+		filter["month"] = *month // Apenas atribui diretamente
 	}
+
+	if year != nil && *year != 0 {
+
+		filter["year"] = *year // Apenas atribui diretamente
+	}
+
+	// var parsedTime time.Time // Declara parsedTime fora do if
+	var err error // Declara err fora do if
+
+	// if date != nil && *date != "" {
+	// 	// Convertendo string para tempo (assumindo que o formato esperado seja YYYY-MM-DD ou YYYY-MM)
+	// 	layoutDay := "2006-01-02"
+	// 	layoutMonth := "2006-01"
+
+	// 	if typeSearchDate == 1 {
+	// 		// Corrigido para usar a variável declarada fora do if
+	// 		parsedTime, err = time.Parse(layoutDay, *date)
+	// 		if err != nil {
+	// 			return nil, 0, fmt.Errorf("formato de data inválido, use YYYY-MM-DD")
+	// 		}
+
+	// 		startOfDay := parsedTime
+	// 		endOfDay := startOfDay.Add(24 * time.Hour)
+
+	// 		// Filtro no MongoDB com o tipo time.Time
+	// 		filter["date"] = bson.M{
+	// 			"$gte": startOfDay,
+	// 			"$lt":  endOfDay,
+	// 		}
+
+	// 	} else if typeSearchDate == 2 {
+
+	// 		trimmedDate := strings.TrimSpace(*date)
+
+	// 		// Verifique se a data tem dia (caso sim, remova)
+	// 		if strings.Count(trimmedDate, "-") == 2 { // Caso seja YYYY-MM-DD
+	// 			// Apenas mantemos ano e mês (removemos o dia)
+	// 			trimmedDate = trimmedDate[:7] // Apenas "YYYY-MM"
+	// 		}
+
+	// 		fmt.Println("Data de mês/ano a ser analisada:", trimmedDate)
+
+	// 		// Tenta analisar como YYYY-MM
+	// 		parsedTime, err = time.Parse(layoutMonth, trimmedDate)
+	// 		if err != nil {
+	// 			return nil, 0, fmt.Errorf("formato de data inválido para mês/ano, use YYYY-MM: %v", err)
+	// 		}
+
+	// 		firstDay := parsedTime
+	// 		lastDay := firstDay.AddDate(0, 1, 0).Add(-time.Second) // Último segundo do mês
+
+	// 		filter["date"] = bson.M{
+	// 			"$gte": firstDay,
+	// 			"$lt":  lastDay,
+	// 		}
+	// 	} else {
+	// 		// Caso nenhum tipo de pesquisa válido
+	// 		return nil, 0, fmt.Errorf("tipo de pesquisa de data inválido")
+	// 	}
+	// }
 
 	// Contar total de usuários antes da paginação
 	total, err := collection.CountDocuments(context.Background(), filter)
@@ -205,11 +220,13 @@ func SearchMovements(client *mongo.Client, dbName, collectionName string, typeSe
 		return nil, 0, err
 	}
 
+	sort := bson.D{{Key: "date", Value: -1}}
+
 	// Executa a consulta com paginação
 	cursor, err := collection.Find(
 		context.Background(),
 		filter,
-		options.Find().SetSkip(int64((page-1)*limit)).SetLimit(int64(limit)),
+		options.Find().SetSort(sort).SetSkip(int64((page-1)*limit)).SetLimit(int64(limit)),
 	)
 	if err != nil {
 		return nil, 0, err
@@ -234,6 +251,8 @@ func SearchMovements(client *mongo.Client, dbName, collectionName string, typeSe
 			"CompanyFullData": movement.CompanyFullData,
 			"CompanyId":       movement.CompanyId,
 			"CompanyDocument": movement.CompanyDocument,
+			"Year":            movement.Year,
+			"Month":           movement.Month,
 		})
 	}
 

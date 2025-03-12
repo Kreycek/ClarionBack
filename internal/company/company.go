@@ -43,6 +43,7 @@ func GetAllAutoComplete(client *mongo.Client, dbName, collectionName, name strin
 			"Name":       company.Name,
 			"Documents":  company.Documents,
 			"Active":     company.Active,
+			"Exercise":   company.Exercise,
 		})
 	}
 

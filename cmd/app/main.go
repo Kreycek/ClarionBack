@@ -59,6 +59,7 @@ func main() {
 	http.HandleFunc("/updateChartOfAccount", chartofaccount.UpdateChartOfAccountHandler)
 	http.HandleFunc("/updateAllYearOfAccounts", chartofaccount.UpdateYearForAllDocumentsHandler)
 	http.HandleFunc("/VerifyExistChartOfAccount", chartofaccount.VerifyExistChartOfAccountHandler)
+	http.HandleFunc("/GetAllCoaAutoComplete", chartofaccount.GetAllCoaAutoCompleteHandler)
 
 	//DIÁRIO
 	http.HandleFunc("/getAllDailys", daily.GetAllDailysHandler)
@@ -77,7 +78,7 @@ func main() {
 	http.HandleFunc("/UpdateCompany", company.UpdateCompanyHandler)
 	http.HandleFunc("/VerifyExistCompany", company.VerifyExistCompanyHandler)
 	http.HandleFunc("/SearchCompanys", company.SearchCompanysHandler)
-	http.HandleFunc("/GetAllAutoComplete", company.GetAllAutoCompletesHandler)
+	http.HandleFunc("/GetAllCompanyAutoComple", company.GetAllCompanyAutoCompleteHandler)
 
 	//MOVIMENTO
 	http.HandleFunc("/GetAllMovements", movement.GetAllMovementsHandler)

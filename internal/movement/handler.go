@@ -204,6 +204,8 @@ func UpdateMovementHandler(w http.ResponseWriter, r *http.Request) {
 			"companyFullData": movement.CompanyFullData,
 			"companyId":       movement.CompanyId,
 			"companyDocument": movement.CompanyDocument,
+			"year":            movement.Year,
+			"month":           movement.Month,
 		},
 	}
 
@@ -265,12 +267,14 @@ func SearchMovementsHandler(w http.ResponseWriter, r *http.Request) {
 	// Definir estrutura para receber os parâmetros
 
 	var request struct {
-		CodDaily       *string `json:"codDaily,omitempty"`
-		CodDocument    *string `json:"codDocument,omitempty"`
-		DateMovement   *string `json:"dateMovement,omitempty"`
-		TypeSearchDate int     `json:"typeSearchDate"`
-		Page           int64   `json:"page"`
-		Limit          int64   `json:"limit"`
+		CodDaily     *string `json:"codDaily,omitempty"`
+		CodDocument  *string `json:"codDocument,omitempty"`
+		Month        *int    `json:"month,omitempty"`
+		Year         *int    `json:"year,omitempty"`
+		DateMovement *string `json:"dateMovement,omitempty"`
+
+		Page  int64 `json:"page"`
+		Limit int64 `json:"limit"`
 	}
 
 	// Decodificar o corpo da requisição JSON
@@ -279,9 +283,9 @@ func SearchMovementsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println(*request.CodDaily)
-	fmt.Println("DATA", *request.DateMovement)
-	fmt.Println("TypeSearchDate", request.TypeSearchDate)
+	// fmt.Println(*request.CodDaily)
+	// fmt.Println("DATA", *request.DateMovement)
+	// fmt.Println("TypeSearchDate", request.TypeSearchDate)
 
 	// Definir valores padrão para paginação
 	if request.Page < 1 {
@@ -292,7 +296,7 @@ func SearchMovementsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Buscar usuários com paginação
-	movements, total, err := SearchMovements(client, clarion.DBName, "movement", request.TypeSearchDate, request.CodDaily, request.CodDocument, request.DateMovement, request.Page, request.Limit)
+	movements, total, err := SearchMovements(client, clarion.DBName, "movement", request.Month, request.Year, request.CodDaily, request.CodDocument, request.DateMovement, request.Page, request.Limit)
 	if err != nil {
 		http.Error(w, "Erro ao buscar movimento", http.StatusInternalServerError)
 		return

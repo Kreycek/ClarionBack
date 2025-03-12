@@ -17,7 +17,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func GetAllAutoCompletesHandler(w http.ResponseWriter, r *http.Request) {
+func GetAllCompanyAutoCompleteHandler(w http.ResponseWriter, r *http.Request) {
 	status, msg := clarion.TokenValido(w, r)
 	if !status {
 		http.Error(w, fmt.Sprintf("erro ao buscar empresas: %v", msg), http.StatusUnauthorized)

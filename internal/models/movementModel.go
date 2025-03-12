@@ -9,7 +9,9 @@ import (
 type Movement struct {
 	ID              primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
 	Date            time.Time          `json:"date" bson:"date,omitempt"`
-	CompanyFullData string             `json:"companyFullData" bson:"companyFullData"`
+	CompanyFullData string             `json:"companyFullData" bson:"companyFullData,omitempty"`
+	Year            int                `json:"year" bson:"year,omitempty"`
+	Month           int                `json:"month" bson:"month,omitempty"`
 	CompanyId       primitive.ObjectID `json:"companyId,omitempty" bson:"companyId,omitempty"`
 	CompanyDocument string             `json:"companyDocument" bson:"companyDocument"`
 	CodDaily        string             `json:"codDaily" bson:"codDaily"`
