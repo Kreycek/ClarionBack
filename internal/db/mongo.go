@@ -21,7 +21,7 @@ func ConnectMongoDB(uri string) (*mongo.Client, error) {
 		return nil, fmt.Errorf("erro ao conectar com o MongoDB %v", err)
 	}
 
-	fmt.Println("Contectado ao MongoDB!")
+	// fmt.Println("Contectado ao MongoDB!")
 
 	return client, nil
 }

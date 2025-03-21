@@ -1,6 +1,7 @@
 package movement
 
 import (
+	clarion "Clarion"
 	"Clarion/internal/db"
 	"Clarion/internal/models"
 	"context"
@@ -162,58 +163,6 @@ func SearchMovements(client *mongo.Client, dbName, collectionName string, month 
 	// var parsedTime time.Time // Declara parsedTime fora do if
 	var err error // Declara err fora do if
 
-	// if date != nil && *date != "" {
-	// 	// Convertendo string para tempo (assumindo que o formato esperado seja YYYY-MM-DD ou YYYY-MM)
-	// 	layoutDay := "2006-01-02"
-	// 	layoutMonth := "2006-01"
-
-	// 	if typeSearchDate == 1 {
-	// 		// Corrigido para usar a variável declarada fora do if
-	// 		parsedTime, err = time.Parse(layoutDay, *date)
-	// 		if err != nil {
-	// 			return nil, 0, fmt.Errorf("formato de data inválido, use YYYY-MM-DD")
-	// 		}
-
-	// 		startOfDay := parsedTime
-	// 		endOfDay := startOfDay.Add(24 * time.Hour)
-
-	// 		// Filtro no MongoDB com o tipo time.Time
-	// 		filter["date"] = bson.M{
-	// 			"$gte": startOfDay,
-	// 			"$lt":  endOfDay,
-	// 		}
-
-	// 	} else if typeSearchDate == 2 {
-
-	// 		trimmedDate := strings.TrimSpace(*date)
-
-	// 		// Verifique se a data tem dia (caso sim, remova)
-	// 		if strings.Count(trimmedDate, "-") == 2 { // Caso seja YYYY-MM-DD
-	// 			// Apenas mantemos ano e mês (removemos o dia)
-	// 			trimmedDate = trimmedDate[:7] // Apenas "YYYY-MM"
-	// 		}
-
-	// 		fmt.Println("Data de mês/ano a ser analisada:", trimmedDate)
-
-	// 		// Tenta analisar como YYYY-MM
-	// 		parsedTime, err = time.Parse(layoutMonth, trimmedDate)
-	// 		if err != nil {
-	// 			return nil, 0, fmt.Errorf("formato de data inválido para mês/ano, use YYYY-MM: %v", err)
-	// 		}
-
-	// 		firstDay := parsedTime
-	// 		lastDay := firstDay.AddDate(0, 1, 0).Add(-time.Second) // Último segundo do mês
-
-	// 		filter["date"] = bson.M{
-	// 			"$gte": firstDay,
-	// 			"$lt":  lastDay,
-	// 		}
-	// 	} else {
-	// 		// Caso nenhum tipo de pesquisa válido
-	// 		return nil, 0, fmt.Errorf("tipo de pesquisa de data inválido")
-	// 	}
-	// }
-
 	// Contar total de usuários antes da paginação
 	total, err := collection.CountDocuments(context.Background(), filter)
 	if err != nil {
@@ -260,4 +209,58 @@ func SearchMovements(client *mongo.Client, dbName, collectionName string, month 
 
 	// Retorna usuários e total de registros
 	return movements, total, nil
+}
+
+func SearchRecordsBetweenMonths(startYear, startMonth, endYear, endMonth int) ([]models.Movement, error) {
+
+	client, err := db.ConnectMongoDB(clarion.ConectionString)
+	if err != nil {
+		return nil, fmt.Errorf("erro ao conectar ao MongoDB: %v", err)
+	}
+
+	// Acessando a coleção do MongoDB
+	collection := client.Database(clarion.DBName).Collection("movement")
+
+	// Consulta para incluir registros dentro do intervalo de meses e anos
+	query := bson.M{
+		"$or": []bson.M{
+			// Caso o intervalo abranja um único ano
+			{
+				"year":  startYear,
+				"month": bson.M{"$gte": startMonth},
+			},
+			// Caso o intervalo abranja o ano final (final do intervalo de pesquisa)
+			{
+				"year":  endYear,
+				"month": bson.M{"$lte": endMonth},
+			},
+			// Caso o intervalo se estenda por múltiplos anos (anos intermediários)
+			{
+				"year": bson.M{"$gt": startYear, "$lt": endYear},
+			},
+		},
+	}
+
+	// Encontrando os registros que atendem à consulta
+	cursor, err := collection.Find(context.Background(), query)
+	if err != nil {
+		return nil, fmt.Errorf("erro ao buscar registros: %v", err)
+	}
+	defer cursor.Close(context.Background())
+
+	var records []models.Movement
+	for cursor.Next(context.Background()) {
+		var record models.Movement
+		if err := cursor.Decode(&record); err != nil {
+			return nil, fmt.Errorf("erro ao decodificar registro: %v", err)
+		}
+
+		records = append(records, record)
+	}
+
+	if err := cursor.Err(); err != nil {
+		return nil, fmt.Errorf("erro ao iterar os resultados: %v", err)
+	}
+
+	return records, nil
 }

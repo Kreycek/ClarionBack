@@ -1,11 +1,13 @@
 package chartofaccount
 
 import (
+	clarion "Clarion"
 	"Clarion/internal/db"
 	"Clarion/internal/models"
 	"context"
 	"fmt"
 	"log"
+	"sort"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -255,4 +257,68 @@ func UpdateYearForAllDocuments(client *mongo.Client, dbName, collectionName stri
 
 	// Retorna nil se tudo ocorreu com sucesso
 	return nil
+}
+
+func SearchAccounts(codAccounts []string) ([]models.ChartOfAccount, error) {
+	client, err := db.ConnectMongoDB(clarion.ConectionString)
+	if err != nil {
+		return nil, fmt.Errorf("erro ao conectar ao MongoDB: %v", err)
+	}
+
+	collection := client.Database(clarion.DBName).Collection("chartOfAccount")
+	var contas []models.ChartOfAccount
+
+	// Usando o Find para buscar vários documentos
+	cursor, err := collection.Find(context.Background(), bson.M{"codAccount": bson.M{"$in": codAccounts}})
+	if err != nil {
+		return nil, fmt.Errorf("erro ao buscar contas: %v", err)
+	}
+	defer cursor.Close(context.Background())
+
+	// Decodificando os documentos encontrados para o slice de contas
+	for cursor.Next(context.Background()) {
+		var coa models.ChartOfAccount
+		if err := cursor.Decode(&coa); err != nil {
+			return nil, fmt.Errorf("erro ao decodificar conta: %v", err)
+		}
+		contas = append(contas, coa)
+	}
+
+	// Verificando se houve erro durante a iteração do cursor
+	if err := cursor.Err(); err != nil {
+		return nil, fmt.Errorf("erro ao iterar os resultados: %v", err)
+	}
+
+	// Retornando as contas encontradas
+	return contas, nil
+}
+
+// Preencher uma matriz de strings
+func BreakAccounts(codsAccount string) []string {
+	// Exibe a string inicial
+	// fmt.Println("codAccount ", codsAccount)
+	totalChar := len(codsAccount)
+
+	// Um slice para armazenar as substrings
+	var accounts []string
+
+	// Laço que vai quebrando a string enquanto tiver mais de 2 caracteres
+	for totalChar >= 2 {
+		// Pegando a substring de codAccount
+		codAccountSearch := codsAccount[0:totalChar]
+
+		// Exibe a substring gerada
+		// fmt.Println("string gerada ", codAccountSearch)
+
+		// Adiciona a substring ao slice
+		accounts = append(accounts, codAccountSearch)
+
+		// Diminui o número de caracteres para pegar substrings menores
+		totalChar--
+	}
+
+	sort.Strings(accounts)
+
+	// Retorna o slice com as substrings
+	return accounts
 }

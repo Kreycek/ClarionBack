@@ -3,10 +3,12 @@ package main
 import (
 	clarion "Clarion"
 	"Clarion/internal/auth"
+	"Clarion/internal/balancete"
 	chartofaccount "Clarion/internal/chartOfAccount"
 	"Clarion/internal/company"
 	costcenter "Clarion/internal/costCenter"
 	"Clarion/internal/daily"
+
 	"Clarion/internal/movement"
 	"Clarion/internal/perfil"
 	"Clarion/internal/users"
@@ -100,6 +102,8 @@ func main() {
 	//TESTE
 	http.HandleFunc("/teste", loginHandler)
 	handler := c.Handler(http.DefaultServeMux)
+
+	balancete.GenerateBalanceteReport(2025, 01, 2025, 06)
 
 	// http.HandleFunc("/createUser", auth.createUser) // Rota de validação do token
 
