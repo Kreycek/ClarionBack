@@ -12,7 +12,7 @@ import (
 
 // Variável global que contém a chave secreta para JWT
 var SecretKey = []byte("my_secret_key")
-var UrlSite = "http://localhost:52226"
+var UrlSite = "http://localhost:58022"
 var ConectionString = "mongodb://admin:secret@localhost:27017"
 var DBName = "clarion"
 
@@ -20,7 +20,7 @@ func TokenValido(w http.ResponseWriter, r *http.Request) (bool, string) {
 
 	authHeader := r.Header.Get("Authorization")
 	if authHeader == "" {
-		// http.Error(w, "Token não fornecido", http.StatusUnauthorized)
+		// http.Error(w, "Token não fornecido", httjp.StatusUnauthorized)
 		return false, "Token não fornecido"
 	}
 

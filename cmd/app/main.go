@@ -99,11 +99,14 @@ func main() {
 	http.HandleFunc("/VerifyExistCostCenter", costcenter.VerifyExistCostCenterHandler)
 	http.HandleFunc("/SearchCostCenters", costcenter.SearchCostCentersHandler)
 
+	//BALANCETE
+	http.HandleFunc("/GenerateBalanceteReport", balancete.GenerateBalanceteReportHandler)
+
 	//TESTE
 	http.HandleFunc("/teste", loginHandler)
 	handler := c.Handler(http.DefaultServeMux)
 
-	balancete.GenerateBalanceteReport(2025, 01, 2025, 06)
+	// balancete.GenerateBalanceteReport(2025, 01, 2025, 06)
 
 	// http.HandleFunc("/createUser", auth.createUser) // Rota de validação do token
 

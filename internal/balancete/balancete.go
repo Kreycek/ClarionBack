@@ -4,7 +4,6 @@ import (
 	chartofaccount "Clarion/internal/chartOfAccount"
 	"Clarion/internal/models"
 	"Clarion/internal/movement"
-	"fmt"
 	"sort"
 	"strconv"
 )
@@ -55,10 +54,9 @@ func SumValuesFathers(codAccount string, _balancetes []models.Balancete) {
 			if _balancetes[t].CodAccount == codAccount {
 				debit = _balancetes[t].DebitValue
 				credit = _balancetes[t].CreditValue
-			}
 
-			//Aqui começa a pega o valor da conta com valor e somar nos pais
-			if _balancetes[t].CodAccount == codAccountFather {
+			} else if _balancetes[t].CodAccount == codAccountFather {
+
 				_balancetes[t].DebitValue = _balancetes[t].DebitValue + debit
 				_balancetes[t].CreditValue = _balancetes[t].CreditValue + credit
 				// debit = 0.0
@@ -69,6 +67,7 @@ func SumValuesFathers(codAccount string, _balancetes []models.Balancete) {
 
 		totolreg--
 	}
+
 }
 
 /* Função criada por Ricardo Silva Ferreira
@@ -76,7 +75,7 @@ func SumValuesFathers(codAccount string, _balancetes []models.Balancete) {
    Data Final da criação : 21/03/2025 12:45
 */
 
-func ReturnBalanceteLine(codAccount string, debitValue float64, creditValue float64, description string, fatherCod string) models.Balancete {
+func ReturnBalanceteLine(codAccount string, debitValue float64, creditValue float64, description string, fatherCod string, class string, sum bool) models.Balancete {
 
 	var mvi models.Balancete
 
@@ -85,7 +84,8 @@ func ReturnBalanceteLine(codAccount string, debitValue float64, creditValue floa
 	mvi.CreditValue = creditValue
 	mvi.Description = description
 	mvi.FatherCod = fatherCod
-
+	mvi.Class = class
+	mvi.Sum = sum
 	return mvi
 }
 
@@ -110,7 +110,7 @@ func GenerateBalanceteReport(initialYear int, initialMonth int, endYear int, end
 
 				// var _balanceteTemp []models.Balancete
 
-				fmt.Println("Começo do balancete " + strconv.Itoa(i))
+				// fmt.Println("Começo do balancete " + strconv.Itoa(i))
 
 				for k := 0; k < len(movement[i].Movements[j].MovementsItens); k++ {
 
@@ -139,18 +139,21 @@ func GenerateBalanceteReport(initialYear int, initialMonth int, endYear int, end
 							//SE EXISTIR APENAS ATUALIZA OS VALORES COM A SOMA DE DÉBITO OU CRÉDITO
 							if _balancetes[n].CodAccount == movimentItensLine.CodAccount {
 
+								totalcredit := 0.00
+								totalDebit := 0.0
 								existBalanceteRecord = true
 
 								//DADOS DE DÉBITO
 								debit := _balancetes[n].DebitValue
 								debitDB, _ := strconv.ParseFloat(movimentItensLine.DebitValue.String(), 64)
-								totalDebit := debit + debitDB
+								totalDebit = debit + debitDB
 								_balancetes[n].DebitValue = totalDebit
+								_balancetes[n].Sum = true
 
 								//DADOS DE CRÉDITO
 								credit := _balancetes[n].CreditValue
 								creditDB, _ := strconv.ParseFloat(movimentItensLine.CreditValue.String(), 64)
-								totalcredit := credit + creditDB
+								totalcredit = credit + creditDB
 								_balancetes[n].CreditValue = totalcredit
 
 								break
@@ -168,6 +171,8 @@ func GenerateBalanceteReport(initialYear int, initialMonth int, endYear int, end
 								credit,
 								"",
 								movimentItensLine.CodAccount[0:2],
+								movimentItensLine.CodAccount[0:1],
+								true,
 							))
 
 						}
@@ -202,6 +207,8 @@ func GenerateBalanceteReport(initialYear int, initialMonth int, endYear int, end
 									0,
 									accountListReady[p].Description,
 									accountListReady[p].CodAccount[0:2],
+									accountListReady[p].CodAccount[0:1],
+									false,
 								))
 
 								// fmt.Println("CodsAccount", mvi.CodAccount+" - "+mvi.Description+" - "+fmt.Sprintf("%.2f", mvi.DebitValue)+" - "+fmt.Sprintf("%.2f", mvi.CreditValue))
@@ -222,8 +229,8 @@ func GenerateBalanceteReport(initialYear int, initialMonth int, endYear int, end
 
 					SumValuesFathers(_accounts[o], _balancetes)
 
-					// for t := 0; t < len(_balanceteTemp); t++ {
-					// 	fmt.Println(_balanceteTemp[t].CodAccount, " - ", _balanceteTemp[t].Description, _balanceteTemp[t].DebitValue, _balanceteTemp[t].CreditValue, _balanceteTemp[t].Sum)
+					// for t := 0; t < len(_balancetes); t++ {
+					// 	fmt.Println(_balancetes[t].CodAccount, " - ", _balancetes[t].Description, _balancetes[t].DebitValue, _balancetes[t].CreditValue, _balancetes[t].Sum)
 					// }
 
 				}
@@ -231,9 +238,9 @@ func GenerateBalanceteReport(initialYear int, initialMonth int, endYear int, end
 			}
 		}
 
-		for t := 0; t < len(_balancetes); t++ {
-			fmt.Println(_balancetes[t].CodAccount, " - ", _balancetes[t].Description, _balancetes[t].DebitValue, _balancetes[t].CreditValue)
-		}
+		// for t := 0; t < len(_balancetes); t++ {
+		// 	fmt.Println(_balancetes[t].CodAccount, " - ", _balancetes[t].Description, _balancetes[t].DebitValue, _balancetes[t].CreditValue)
+		// }
 
 	}
 	return _balancetes

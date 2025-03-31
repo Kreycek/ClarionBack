@@ -13,4 +13,6 @@ type Balancete struct {
 	BalanceDebitValue  float64   `json:" balanceDebitValue" bson:"balanceDebitValue,omitempty"`
 	BalandeCreditValue float64   `json:"balanceCredittValue" bson:"balanceCredittValue,omitempty"`
 	FatherCod          string    `json:"fatherCod" bson:"fatherCod,omitempty"`
+	Class              string    `json:"class" bson:"class,omitempty"`
+	Sum                bool      `json:"sum" bson:"sum,omitempty"`
 }
