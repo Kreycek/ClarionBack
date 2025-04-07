@@ -41,6 +41,18 @@ func GenerateBalanceteReportHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Obter usuários paginados
 	balancete := GenerateBalanceteReport(initialYear, initialMonth, endYear, endMonth)
+
+	for i := 0; i < len(balancete); i++ {
+		if balancete[i].DebitValue > balancete[i].CreditValue {
+			balancete[i].BalanceDebitValue = balancete[i].DebitValue - balancete[i].CreditValue
+		}
+
+		if balancete[i].CreditValue > balancete[i].DebitValue {
+			balancete[i].BalandeCreditValue = balancete[i].CreditValue - balancete[i].DebitValue
+		}
+
+	}
+
 	if err != nil {
 		http.Error(w, fmt.Sprintf("erro ao buscar diários: %v", err), http.StatusInternalServerError)
 		return

@@ -4,6 +4,7 @@ import (
 	chartofaccount "Clarion/internal/chartOfAccount"
 	"Clarion/internal/models"
 	"Clarion/internal/movement"
+	"fmt"
 	"sort"
 	"strconv"
 )
@@ -46,16 +47,17 @@ func SumValuesFathers(codAccount string, _balancetes []models.Balancete) {
 
 		codAccountFather := codAccount[0:totolreg]
 
-		// fmt.Println("codAccountFather", codAccountFather)
-
 		for t := len(_balancetes) - 1; t >= 0; t-- {
 
 			//Aqui guarda o valor da primeira conta com valor ou seja a conta que tem valor
-			if _balancetes[t].CodAccount == codAccount {
+			if _balancetes[t].CodAccount == codAccount && debit == 0 && credit == 0 {
 				debit = _balancetes[t].DebitValue
 				credit = _balancetes[t].CreditValue
+				fmt.Println("conta com valor", codAccountFather, debit, credit)
 
 			} else if _balancetes[t].CodAccount == codAccountFather {
+
+				fmt.Println("codAccountFather pai", codAccountFather, debit, credit)
 
 				_balancetes[t].DebitValue = _balancetes[t].DebitValue + debit
 				_balancetes[t].CreditValue = _balancetes[t].CreditValue + credit
@@ -67,6 +69,7 @@ func SumValuesFathers(codAccount string, _balancetes []models.Balancete) {
 
 		totolreg--
 	}
+	fmt.Println("Acabou a conta ", codAccount)
 
 }
 
@@ -223,14 +226,12 @@ func GenerateBalanceteReport(initialYear int, initialMonth int, endYear int, end
 						}
 					}
 
-					sort.Slice(_balancetes, func(i, j int) bool {
-						return _balancetes[i].CodAccount < _balancetes[j].CodAccount
-					})
-
-					SumValuesFathers(_accounts[o], _balancetes)
+					// SumValuesFathers(_accounts[o], _balancetes)
 
 					// for t := 0; t < len(_balancetes); t++ {
-					// 	fmt.Println(_balancetes[t].CodAccount, " - ", _balancetes[t].Description, _balancetes[t].DebitValue, _balancetes[t].CreditValue, _balancetes[t].Sum)
+					// 	if _balancetes[t].CodAccount[0:2] == "81" {
+					// 		fmt.Println(_balancetes[t].CodAccount, " - ", _balancetes[t].Description, _balancetes[t].DebitValue, _balancetes[t].CreditValue, _balancetes[t].Sum)
+					// 	}
 					// }
 
 				}
@@ -238,9 +239,16 @@ func GenerateBalanceteReport(initialYear int, initialMonth int, endYear int, end
 			}
 		}
 
-		// for t := 0; t < len(_balancetes); t++ {
-		// 	fmt.Println(_balancetes[t].CodAccount, " - ", _balancetes[t].Description, _balancetes[t].DebitValue, _balancetes[t].CreditValue)
-		// }
+		sort.Slice(_balancetes, func(i, j int) bool {
+			return _balancetes[i].CodAccount < _balancetes[j].CodAccount
+		})
+
+		for t := 0; t < len(_balancetes); t++ {
+
+			SumValuesFathers(_balancetes[t].CodAccount, _balancetes)
+
+			// fmt.Println(_balancetes[t].CodAccount, " - ", _balancetes[t].Description, _balancetes[t].DebitValue, _balancetes[t].CreditValue)
+		}
 
 	}
 	return _balancetes
