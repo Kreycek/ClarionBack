@@ -376,8 +376,6 @@ func SearchCompanysHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println(request)
-
 	// Definir valores padrão para paginação
 	if request.Page < 1 {
 		request.Page = 1

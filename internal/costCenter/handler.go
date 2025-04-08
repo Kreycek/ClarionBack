@@ -304,8 +304,6 @@ func VerifyExistCostCenterHandler(w http.ResponseWriter, r *http.Request) {
 	// 	}},
 	// }
 
-	fmt.Println("codCostCenter", cc)
-
 	filter := bson.D{{Key: "codCostCenter", Value: cc.CodCostCenter}}
 
 	var result bson.M
@@ -361,8 +359,6 @@ func SearchCostCentersHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Erro ao decodificar JSON", http.StatusBadRequest)
 		return
 	}
-
-	fmt.Println(*request.CodCostCenter)
 
 	// Definir valores padrão para paginação
 	if request.Page < 1 {

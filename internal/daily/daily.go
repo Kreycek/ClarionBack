@@ -145,7 +145,6 @@ func GetDailyByID(client *mongo.Client, dbName, collectionName, dailyId string) 
 	collection := client.Database(dbName).Collection(collectionName)
 
 	// Criar filtro para buscar um usuário pelo ID
-	fmt.Println("id", dailyId)
 
 	objectID, erroId := primitive.ObjectIDFromHex(dailyId)
 	if erroId != nil {
@@ -177,8 +176,6 @@ func GetDailyByID(client *mongo.Client, dbName, collectionName, dailyId string) 
 		"Active":      daily.Active,
 		"Documents":   daily.Documents,
 	}
-
-	fmt.Println("COAData", dailys)
 
 	return dailys, nil
 }

@@ -76,7 +76,6 @@ func GetMovementByID(client *mongo.Client, dbName, collectionName, movementId st
 	collection := client.Database(dbName).Collection(collectionName)
 
 	// Criar filtro para buscar um usuário pelo ID
-	fmt.Println("id", movementId)
 
 	objectID, erroId := primitive.ObjectIDFromHex(movementId)
 	if erroId != nil {
@@ -114,8 +113,6 @@ func GetMovementByID(client *mongo.Client, dbName, collectionName, movementId st
 		"Year":            movement.Year,
 		"Month":           movement.Month,
 	}
-
-	fmt.Println("COAData", movements)
 
 	return movements, nil
 }
@@ -204,8 +201,6 @@ func SearchMovements(client *mongo.Client, dbName, collectionName string, month 
 			"Month":           movement.Month,
 		})
 	}
-
-	fmt.Println("Total registros", total)
 
 	// Retorna usuários e total de registros
 	return movements, total, nil

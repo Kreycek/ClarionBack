@@ -92,7 +92,6 @@ func GetChartOfAccountByIdHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println("asdad", coa)
 	// Configurar o cabeçalho da resposta como JSON
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)

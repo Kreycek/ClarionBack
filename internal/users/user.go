@@ -19,7 +19,6 @@ func GetUserByID(client *mongo.Client, dbName, collectionName, userID string) (m
 	collection := client.Database(dbName).Collection(collectionName)
 
 	// Criar filtro para buscar um usuário pelo ID
-	fmt.Println("id", userID)
 
 	objectID, erroId := primitive.ObjectIDFromHex(userID)
 	if erroId != nil {
@@ -55,8 +54,6 @@ func GetUserByID(client *mongo.Client, dbName, collectionName, userID string) (m
 		"Active":         user.Active,
 		"Mobile":         user.Mobile,
 	}
-
-	fmt.Println("userData", userData)
 
 	return userData, nil
 }

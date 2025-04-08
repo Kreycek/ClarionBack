@@ -4,7 +4,6 @@ import (
 	chartofaccount "Clarion/internal/chartOfAccount"
 	"Clarion/internal/models"
 	"Clarion/internal/movement"
-	"fmt"
 	"sort"
 	"strconv"
 )
@@ -53,11 +52,8 @@ func SumValuesFathers(codAccount string, _balancetes []models.Balancete) {
 			if _balancetes[t].CodAccount == codAccount && debit == 0 && credit == 0 {
 				debit = _balancetes[t].DebitValue
 				credit = _balancetes[t].CreditValue
-				fmt.Println("conta com valor", codAccountFather, debit, credit)
 
 			} else if _balancetes[t].CodAccount == codAccountFather {
-
-				fmt.Println("codAccountFather pai", codAccountFather, debit, credit)
 
 				_balancetes[t].DebitValue = _balancetes[t].DebitValue + debit
 				_balancetes[t].CreditValue = _balancetes[t].CreditValue + credit
@@ -69,7 +65,6 @@ func SumValuesFathers(codAccount string, _balancetes []models.Balancete) {
 
 		totolreg--
 	}
-	fmt.Println("Acabou a conta ", codAccount)
 
 }
 
@@ -110,10 +105,6 @@ func GenerateBalanceteReport(initialYear int, initialMonth int, endYear int, end
 			for j := 0; j < len(movement[i].Movements); j++ {
 
 				var _accounts []string
-
-				// var _balanceteTemp []models.Balancete
-
-				// fmt.Println("Começo do balancete " + strconv.Itoa(i))
 
 				for k := 0; k < len(movement[i].Movements[j].MovementsItens); k++ {
 
@@ -214,12 +205,8 @@ func GenerateBalanceteReport(initialYear int, initialMonth int, endYear int, end
 									false,
 								))
 
-								// fmt.Println("CodsAccount", mvi.CodAccount+" - "+mvi.Description+" - "+fmt.Sprintf("%.2f", mvi.DebitValue)+" - "+fmt.Sprintf("%.2f", mvi.CreditValue))
-
 							} else {
 								_balancetes[indice].Description = accountListReady[p].Description
-
-								// fmt.Println("CodsAccount", _balanceteTemp[indice].CodAccount+" - "+_balanceteTemp[indice].Description+" - "+fmt.Sprintf("%.2f", _balanceteTemp[indice].DebitValue)+" - "+fmt.Sprintf("%.2f", _balanceteTemp[indice].CreditValue))
 
 							}
 
@@ -247,7 +234,6 @@ func GenerateBalanceteReport(initialYear int, initialMonth int, endYear int, end
 
 			SumValuesFathers(_balancetes[t].CodAccount, _balancetes)
 
-			// fmt.Println(_balancetes[t].CodAccount, " - ", _balancetes[t].Description, _balancetes[t].DebitValue, _balancetes[t].CreditValue)
 		}
 
 	}

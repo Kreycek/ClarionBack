@@ -105,9 +105,6 @@ func GetCostCenterByID(client *mongo.Client, dbName, collectionName, centerCostI
 
 	collection := client.Database(dbName).Collection(collectionName)
 
-	// Criar filtro para buscar um usuário pelo ID
-	fmt.Println("id", centerCostId)
-
 	objectID, erroId := primitive.ObjectIDFromHex(centerCostId)
 	if erroId != nil {
 		log.Fatalf("Erro ao converter string para ObjectID: %v", erroId)
@@ -137,8 +134,6 @@ func GetCostCenterByID(client *mongo.Client, dbName, collectionName, centerCostI
 		"CostCenterSecondary": costCenter.CostCenterSecondary,
 		"Active":              costCenter.Active,
 	}
-
-	fmt.Println("COAData", constCenters)
 
 	return constCenters, nil
 }

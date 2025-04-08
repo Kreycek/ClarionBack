@@ -320,7 +320,6 @@ func VerifyExistDailyHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// fmt.Println("email", email)
 	// Conectar ao MongoDB
 	client, err := db.ConnectMongoDB(clarion.ConectionString)
 	if err != nil {
@@ -336,8 +335,6 @@ func VerifyExistDailyHandler(w http.ResponseWriter, r *http.Request) {
 	// 		bson.D{{Key: "email", Value: userName}},
 	// 	}},
 	// }
-
-	fmt.Println("dailyCod", daily)
 
 	filter := bson.D{{Key: "codDaily", Value: daily.CodDaily}}
 
@@ -394,8 +391,6 @@ func SearchDailysHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Erro ao decodificar JSON", http.StatusBadRequest)
 		return
 	}
-
-	fmt.Println(request)
 
 	// Definir valores padrão para paginação
 	if request.Page < 1 {

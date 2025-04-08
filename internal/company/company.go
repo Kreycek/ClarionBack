@@ -163,8 +163,6 @@ func GetCompanyByID(client *mongo.Client, dbName, collectionName, companyId stri
 		"Exercise":        company.Exercise,
 	}
 
-	fmt.Println("companys", companys)
-
 	return companys, nil
 }
 
@@ -195,9 +193,6 @@ func SearchCompany(
 
 	collection := client.Database(dbName).Collection(collectionName)
 
-	fmt.Println("*codCompany", *codCompany)
-	fmt.Println(" *document", *document)
-	fmt.Println("  *address", *address)
 	// Criando o filtro dinâmico
 	filter := bson.M{}
 	if codCompany != nil && *codCompany != "" {
