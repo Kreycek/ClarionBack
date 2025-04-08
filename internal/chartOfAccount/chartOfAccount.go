@@ -25,6 +25,8 @@ func GetAllCoaAutoComplete(client *mongo.Client, dbName, collectionName, codAcco
 			"$regex":   "^" + codAccount, // "^" faz o regex buscar só no começo
 			"$options": "i",              // Busca insensível a maiúsculas e minúsculas
 		}
+
+		filter["type"] = "M"
 	}
 
 	// Buscar todas as empresas sem paginação

@@ -431,10 +431,9 @@ func VerifyExistChartOfAccountHandler(w http.ResponseWriter, r *http.Request) {
 	// 	}},
 	// }
 
-	fmt.Println("account", account)
-
-	filter := bson.D{
-		{Key: "codAccount", Value: account.CodAccount},
+	filter := bson.M{
+		"codAccount": account.CodAccount,
+		"type":       "M",
 	}
 
 	var result bson.M
