@@ -6,9 +6,9 @@
 
 3) Se quiser entrar diretamente no mongo DB via linha de comando digitar docker exec -it nomeContainer mongosh -u usuario -p senha
 
-4) Retirar um campo da estrutura mongoDB -> db.user.updateOne({ "username": "rico" },  { $unset: { "user": "" } })
+4) Retirar um campo da estrutura mongoDB -> db.uscompanyer.updateMany({},{$unset: { "workNow": false } })
 
-5) Adicionar um campo da estrutura mongoDB -> db.user.updateOne({ "username": "rico" },  { $set: { "user": "" } })
+5) Adicionar um campo da estrutura mongoDB -> db.company.updateMany({},{$set:{"workNow":false}})
 
 6) atualizar dados -> db.usuarios.updateOne({ "username": "kreycek" },  { $unset: { "user": "" } })
 

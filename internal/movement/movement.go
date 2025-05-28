@@ -96,9 +96,6 @@ func GetMovementByID(client *mongo.Client, dbName, collectionName, movementId st
 		return nil, fmt.Errorf("erro ao buscar plano de contas: %v", err)
 	}
 
-	// Converter o _id para string
-	movementId = movement.ID.Hex()
-
 	// Retornar o usuário como um mapa
 	movements := map[string]any{
 		"ID":              movement.ID.Hex(), // Agora o campo ID é uma string
@@ -115,6 +112,74 @@ func GetMovementByID(client *mongo.Client, dbName, collectionName, movementId st
 	}
 
 	return movements, nil
+}
+
+/*
+Função criada por Ricardo Silva Ferreira
+Inicio da criação 28/05/2025 11:51
+Data Final da criação :  28/05/2025 11:54
+*/
+func GetMovementByCompanyId(client *mongo.Client, dbName, collectionName, companyId string, page, limit int) ([]any, int, error) {
+	collection := db.GetCollection(client, dbName, collectionName)
+
+	// Criar o filtro (por enquanto vazio, pode ser expandido)
+
+	objectID, erroId := primitive.ObjectIDFromHex(companyId)
+	if erroId != nil {
+		log.Fatalf("Erro ao converter string para ObjectID: %v", erroId)
+	}
+
+	filter := bson.M{"companyId": objectID}
+
+	// Obter a contagem total de usuários antes da paginação
+	total, err := collection.CountDocuments(context.Background(), filter)
+	if err != nil {
+		return nil, 0, fmt.Errorf("erro ao contar documentos: %v", err)
+	}
+
+	// Definindo ordenação por codAccount (1 = ascendente, -1 = descendente)
+	sort := bson.D{{Key: "date", Value: -1}}
+	// Definir opções de busca com paginação
+	options := options.Find()
+	options.SetSort(sort)
+	options.SetLimit(int64(limit))
+	options.SetSkip(int64((page - 1) * limit))
+
+	// Buscar usuários com paginação
+	cursor, err := collection.Find(context.Background(), filter, options)
+	if err != nil {
+		return nil, 0, fmt.Errorf("erro ao buscar movimentos: %v", err)
+	}
+	defer cursor.Close(context.Background())
+
+	var movements []any
+	for cursor.Next(context.Background()) {
+		var movement models.Movement
+		if err := cursor.Decode(&movement); err != nil {
+			return nil, 0, fmt.Errorf("erro ao decodificar movimento: %v", err)
+		}
+
+		// Adiciona os usuários formatados
+		movements = append(movements, map[string]any{
+			"ID":              movement.ID.Hex(), // Agora o campo ID é uma string
+			"CodDaily":        movement.CodDaily,
+			"CodDocument":     movement.CodDocument,
+			"Date":            movement.Date,
+			"Active":          movement.Active,
+			"Month":           movement.Month,
+			"Year":            movement.Year,
+			"Movements":       movement.Movements,
+			"CompanyFullData": movement.CompanyFullData,
+			"CompanyId":       movement.CompanyId,
+			"CompanyDocument": movement.CompanyDocument,
+		})
+	}
+
+	if err := cursor.Err(); err != nil {
+		return nil, 0, fmt.Errorf("erro ao iterar no cursor: %v", err)
+	}
+
+	return movements, int(total), nil
 }
 
 // Função para inserir um usuário na coleção "user"

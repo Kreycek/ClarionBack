@@ -318,3 +318,63 @@ func SearchMovementsHandler(w http.ResponseWriter, r *http.Request) {
 		log.Printf("erro ao codificar resposta JSON: %v", err)
 	}
 }
+
+/*
+Função criada por Ricardo Silva Ferreira
+Inicio da criação 28/05/2025 11:54
+Data Final da criação :  28/05/2025 11:55
+*/
+func GetMovementByCompanyIdHandler(w http.ResponseWriter, r *http.Request) {
+	status, msg := clarion.TokenValido(w, r)
+	if !status {
+		http.Error(w, fmt.Sprintf("erro ao buscar perfis: %v", msg), http.StatusUnauthorized)
+		return
+	}
+
+	client, err := db.ConnectMongoDB(clarion.ConectionString)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("erro ao conectar ao MongoDB: %v", err), http.StatusInternalServerError)
+		return
+	}
+	defer db.CloseMongoDB(client)
+
+	// Extrair o ID da URL
+	companyId := r.URL.Query().Get("companyId")
+	if companyId == "" {
+		http.Error(w, "ID não fornecido na URL", http.StatusBadRequest)
+		return
+	}
+	// Obter parâmetros de paginação
+	query := r.URL.Query()
+	page, err := strconv.Atoi(query.Get("page"))
+	if err != nil || page < 1 {
+		page = 1 // Padrão: primeira página
+	}
+
+	limit, err := strconv.Atoi(query.Get("limit"))
+	if err != nil || limit < 1 {
+		limit = 10 // Padrão: 10 registros por página
+	}
+
+	// Obter usuários paginados
+	movements, total, err := GetMovementByCompanyId(client, clarion.DBName, "movement", companyId, page, limit)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("erro ao buscar diários: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	// Criar resposta JSON com paginação
+	response := map[string]any{
+		"total":     total,
+		"page":      page,
+		"limit":     limit,
+		"pages":     (total + limit - 1) / limit, // Calcula o número total de páginas
+		"movements": movements,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		log.Printf("erro ao codificar resposta JSON: %v", err)
+	}
+}

@@ -92,6 +92,7 @@ func GetAllCompany(client *mongo.Client, dbName, collectionName string, page, li
 			"Name":            company.Name,
 			"CAE":             company.CAE,
 			"Documents":       company.Documents,
+			"WorkNow":         company.WorkNow,
 			"MainActivity":    company.MainActivity,
 			"OtherActivities": company.OtherActivities,
 			"LegalNature":     company.LegalNature,
@@ -148,6 +149,7 @@ func GetCompanyByID(client *mongo.Client, dbName, collectionName, companyId stri
 		"Name":            company.Name,
 		"CAE":             company.CAE,
 		"Documents":       company.Documents,
+		"WorkNow":         company.WorkNow,
 		"MainActivity":    company.MainActivity,
 		"OtherActivities": company.OtherActivities,
 		"LegalNature":     company.LegalNature,
@@ -237,6 +239,7 @@ func SearchCompany(
 			"Name":            company.Name,
 			"CAE":             company.CAE,
 			"Documents":       company.Documents,
+			"WorkNow":         company.WorkNow,
 			"MainActivity":    company.MainActivity,
 			"OtherActivities": company.OtherActivities,
 			"LegalNature":     company.LegalNature,
@@ -255,4 +258,54 @@ func SearchCompany(
 
 	// Retorna usuários e total de registros
 	return dailys, total, nil
+}
+
+/*
+Função criada por Ricardo Silva Ferreira
+Inicio da criação 27/05/2025 11:14
+Data Final da criação : 27/05/2025 11:21
+*/
+func GetWorkNowCompany(client *mongo.Client, dbName, collectionName string) (map[string]any, error) {
+	collection := client.Database(dbName).Collection(collectionName)
+
+	// Filtro correto para buscar onde workNow é true
+	filter := bson.M{
+		"workNow": true,
+	}
+
+	var company models.Company
+
+	// Buscar um único documento
+	err := collection.FindOne(context.Background(), filter).Decode(&company)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, fmt.Errorf("empresa com workNow=true não encontrada")
+		}
+		return nil, fmt.Errorf("erro ao buscar empresa: %v", err)
+	}
+
+	// Retornar os dados como mapa
+	companys := map[string]any{
+		"ID":              company.ID,
+		"CodCompany":      company.CodCompany,
+		"Name":            company.Name,
+		"CAE":             company.CAE,
+		"Documents":       company.Documents,
+		"WorkNow":         company.WorkNow,
+		"MainActivity":    company.MainActivity,
+		"OtherActivities": company.OtherActivities,
+		"LegalNature":     company.LegalNature,
+		"SocialCapital":   company.SocialCapital,
+		"NationalCapital": company.NationalCapital,
+		"ExtraCapital":    company.ExtraCapital,
+		"PublicCapital":   company.PublicCapital,
+		"VATRegime":       company.VATRegime,
+		"Email":           company.Email,
+		"WebSite":         company.WebSite,
+		"Active":          company.Active,
+		"Phone":           company.Phone,
+		"Exercise":        company.Exercise,
+	}
+
+	return companys, nil
 }

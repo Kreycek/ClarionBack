@@ -81,6 +81,13 @@ func main() {
 	http.HandleFunc("/VerifyExistCompany", company.VerifyExistCompanyHandler)
 	http.HandleFunc("/SearchCompanys", company.SearchCompanysHandler)
 	http.HandleFunc("/GetAllCompanyAutoComple", company.GetAllCompanyAutoCompleteHandler)
+	http.HandleFunc("/UpdateCompanyWorkNow", company.UpdateCompanyWorkNowHandler)
+	/*
+		Função criada por Ricardo Silva Ferreira
+		Inicio da criação 27/05/2025 11:14
+		Data Final da criação : 27/05/2025 11:27
+	*/
+	http.HandleFunc("/GetWorkNowCompany", company.GetWorkNowCompanyHandler)
 
 	//MOVIMENTO
 	http.HandleFunc("/GetAllMovements", movement.GetAllMovementsHandler)
@@ -88,9 +95,14 @@ func main() {
 	http.HandleFunc("/InsertMovement", movement.InsertMovementHandler)
 	http.HandleFunc("/UpdateMovement", movement.UpdateMovementHandler)
 	http.HandleFunc("/SearchMovements", movement.SearchMovementsHandler)
+	/*
+		Função criada por Ricardo Silva Ferreira
+		Inicio da criação 28/05/2025 11:54
+		Data Final da criação :  28/05/2025 11:55
+	*/
+	http.HandleFunc("/GetMovementByCompanyId", movement.GetMovementByCompanyIdHandler)
 
 	//COST CENTER
-
 	http.HandleFunc("/GetAllCostCenters", costcenter.GetAllCostCentersHandler)
 	http.HandleFunc("/GetAllOnlyCostCenters", costcenter.GetAllOnlyCostCentersHandler)
 	http.HandleFunc("/GetCostCenerById", costcenter.GetCostCenerByIdHandler)

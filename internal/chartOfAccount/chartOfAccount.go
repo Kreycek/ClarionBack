@@ -62,7 +62,6 @@ func GetChartOfAccountByID(client *mongo.Client, dbName, collectionName, chartOf
 	collection := client.Database(dbName).Collection(collectionName)
 
 	// Criar filtro para buscar um usuário pelo ID
-	fmt.Println("id", chartOfAccountID)
 
 	objectID, erroId := primitive.ObjectIDFromHex(chartOfAccountID)
 	if erroId != nil {
@@ -85,6 +84,45 @@ func GetChartOfAccountByID(client *mongo.Client, dbName, collectionName, chartOf
 
 	// Converter o _id para string
 	chartOfAccountID = coa.ID.Hex()
+
+	// Retornar o usuário como um mapa
+	COAData := map[string]any{
+		"ID":             chartOfAccountID, // Agora o campo ID é uma string
+		"CodAccount":     coa.CodAccount,
+		"Description":    coa.Description,
+		"Active":         coa.Active,
+		"Type":           coa.Type,
+		"Year":           coa.Year,
+		"CostCentersCOA": coa.CostCentersCOA,
+	}
+
+	return COAData, nil
+}
+
+/* Função criada por Ricardo Silva Ferreira
+   Inicio da criação 04/04/2025 14:55
+   Data Final da criação : 21/03/2025 13:09
+*/
+
+func GetChartOfAccountByCodAccount(client *mongo.Client, dbName, collectionName, codAccount string) (map[string]any, error) {
+	collection := client.Database(dbName).Collection(collectionName)
+
+	filter := bson.M{"codAccount": codAccount}
+
+	// Variável para armazenar o usuário retornado
+	var coa models.ChartOfAccount
+
+	// Usar FindOne para pegar apenas um único registro
+	err := collection.FindOne(context.Background(), filter).Decode(&coa)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, fmt.Errorf("plano de contas não encontrado")
+		}
+		return nil, fmt.Errorf("erro ao buscar plano de contas: %v", err)
+	}
+
+	// Converter o _id para string
+	var chartOfAccountID = coa.ID.Hex()
 
 	// Retornar o usuário como um mapa
 	COAData := map[string]any{
@@ -299,13 +337,19 @@ func SearchAccounts(codAccounts []string) ([]models.ChartOfAccount, error) {
 func BreakAccounts(codsAccount string) []string {
 	// Exibe a string inicial
 	// fmt.Println("codAccount ", codsAccount)
+
+	client, err := db.ConnectMongoDB(clarion.ConectionString)
+	if err != nil {
+
+	}
+
 	totalChar := len(codsAccount)
 
 	// Um slice para armazenar as substrings
 	var accounts []string
 
 	// Laço que vai quebrando a string enquanto tiver mais de 2 caracteres
-	for totalChar >= 2 {
+	for totalChar >= 1 {
 		// Pegando a substring de codAccount
 		codAccountSearch := codsAccount[0:totalChar]
 
@@ -315,8 +359,19 @@ func BreakAccounts(codsAccount string) []string {
 		// Adiciona a substring ao slice
 		accounts = append(accounts, codAccountSearch)
 
+		tt, err := GetChartOfAccountByCodAccount(client, clarion.DBName, "chartOfAccount", codAccountSearch)
+		if err != nil {
+
+		}
+
+		if tt["Type"] == "R" {
+			break
+		}
+		fmt.Println("teste", codAccountSearch, tt["Type"])
+
 		// Diminui o número de caracteres para pegar substrings menores
 		totalChar--
+
 	}
 
 	sort.Strings(accounts)

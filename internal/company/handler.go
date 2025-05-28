@@ -167,7 +167,7 @@ func InsertCompanyHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if company.Active == false {
+	if !company.Active {
 		company.Active = true
 	}
 
@@ -235,6 +235,7 @@ func UpdateCompanyHandler(w http.ResponseWriter, r *http.Request) {
 			"name":            company.Name,
 			"cae":             company.CAE,
 			"documents":       company.Documents,
+			"workNow":         company.WorkNow,
 			"mainActivity":    company.MainActivity,
 			"otherActivities": company.OtherActivities,
 			"legalNature":     company.LegalNature,
@@ -405,5 +406,140 @@ func SearchCompanysHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(response); err != nil {
 		log.Printf("erro ao codificar resposta JSON: %v", err)
+	}
+}
+
+/* Função criada por Ricardo Silva Ferreira
+   Inicio da criação 26/005/2025 17:16
+   Data Final da criação : 26/005/2025 17:20
+*/
+
+func UpdateCompanyWorkNowHandler(w http.ResponseWriter, r *http.Request) {
+	// Validar o token de autenticação
+	status, msg := clarion.TokenValido(w, r)
+	if !status {
+		http.Error(w, fmt.Sprintf("Erro ao validar token: %v", msg), http.StatusUnauthorized)
+		return
+	}
+
+	// Decodificar o JSON recebido
+	var company models.Company
+	if err := json.NewDecoder(r.Body).Decode(&company); err != nil {
+		// http.Error(w, "Erro ao decodificar JSON", http.StatusBadRequest)
+		clarion.FormataRetornoHTTP(w, "Erro ao decodificar JSON", http.StatusBadRequest)
+
+		return
+	}
+
+	// Verifica se o ID é válido
+	if company.ID.IsZero() {
+
+		clarion.FormataRetornoHTTP(w, "ID do plano de contas inválido", http.StatusBadRequest)
+
+		// http.Error(w, "ID do usuário inválido", http.StatusBadRequest)
+		return
+	}
+
+	if company.UpdatedAt.IsZero() {
+		company.UpdatedAt = time.Now()
+	}
+
+	// Criar o objeto de atualização
+	updatePositive := bson.M{
+		"$set": bson.M{
+			"workNow": company.WorkNow,
+		},
+	}
+
+	// Criar o objeto de atualização
+	updateNegative := bson.M{
+		"$set": bson.M{
+			"workNow": false,
+		},
+	}
+
+	// Conectar ao MongoDB e atualizar o usuário
+	client, err := db.ConnectMongoDB(clarion.ConectionString)
+	if err != nil {
+		clarion.FormataRetornoHTTP(w, "Erro ao conectar ao banco de dados", http.StatusInternalServerError)
+
+		// http.Error(w, "Erro ao conectar ao banco de dados", http.StatusInternalServerError)
+		return
+	}
+	defer client.Disconnect(context.Background())
+
+	collection := client.Database(clarion.DBName).Collection("company")
+
+	// Atualizar todos os documentos
+	_, err = collection.UpdateMany(context.Background(), bson.M{}, updateNegative)
+	if err != nil {
+		clarion.FormataRetornoHTTP(w, "Erro ao atualizar todos os registros", http.StatusInternalServerError)
+		return
+	}
+
+	result, err := collection.UpdateOne(context.Background(), bson.M{"_id": company.ID}, updatePositive)
+	if err != nil {
+		clarion.FormataRetornoHTTP(w, "Erro ao atualizar diário, Erro ao atualizar diário", http.StatusInternalServerError)
+
+		// log.Println("Erro ao atualizar usuário:", err)
+		// http.Error(w, "Erro ao atualizar usuário", http.StatusInternalServerError)
+		return
+	}
+
+	// Verifica se algum documento foi modificado
+	if result.ModifiedCount == 0 {
+		clarion.FormataRetornoHTTP(w, "Nenhuma alteração realizada", http.StatusOK)
+
+		// http.Error(w, "Nenhuma alteração realizada", http.StatusNotModified)
+		return
+	}
+
+	// Responder com sucesso
+	clarion.FormataRetornoHTTP(w, "Empresa atualizada com sucesso! Documento modificado", http.StatusOK)
+
+}
+
+/*
+Função criada por Ricardo Silva Ferreira
+Inicio da criação 27/05/2025 11:24
+Data Final da criação : 27/05/2025 11:24
+*/
+func GetWorkNowCompanyHandler(w http.ResponseWriter, r *http.Request) {
+	// Validar token
+	status, msg := clarion.TokenValido(w, r)
+	if !status {
+		http.Error(w, fmt.Sprintf("erro ao validar token: %v", msg), http.StatusUnauthorized)
+		return
+	}
+
+	// Conectar ao MongoDB
+	client, err := db.ConnectMongoDB(clarion.ConectionString)
+	if err != nil {
+		http.Error(w, "Erro ao conectar ao MongoDB", http.StatusInternalServerError)
+		return
+	}
+	defer client.Disconnect(context.Background())
+
+	// Buscar o usuário no banco de dados pelo ID
+	company, err := GetWorkNowCompany(client, clarion.DBName, "company")
+
+	if err != nil {
+		if err.Error() == "empresa com workNow=true não encontrada" {
+			// Retorna 204 No Content se não houver empresa com workNow = true
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+		http.Error(w, "Erro ao buscar empresas", http.StatusInternalServerError)
+		return
+	}
+
+	// Configurar o cabeçalho da resposta como JSON
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
+	// Enviar o usuário como resposta JSON
+	if err := json.NewEncoder(w).Encode(company); err != nil {
+		log.Printf("erro ao codificar resposta JSON: %v", err)
+		http.Error(w, "Erro ao codificar resposta", http.StatusInternalServerError)
 	}
 }

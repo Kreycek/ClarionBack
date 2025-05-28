@@ -19,6 +19,7 @@ type Company struct {
 	NationalCapital string             `json:"nationalCapital" bson:"nationalCapital,omitempty"`
 	ExtraCapital    string             `json:"extraCapital" bson:"extraCapital,omitempty"`
 	PublicCapital   string             `json:"publicCapital" bson:"publicCapital,omitempty"`
+	WorkNow         bool               `json:"workNow" bson:"workNow,omitempty"`
 	VATRegime       string             `json:"vatRegime" bson:"vatRegime,omitempty"`
 	Email           string             `json:"email" bson:"email,omitempty"`
 	WebSite         string             `json:"webSite" bson:"webSite,omitempty"`
