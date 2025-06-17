@@ -20,4 +20,5 @@ type DocumentCompany struct {
 	Address           string    `json:"address" bson:"address,omitempty"`
 	AddressNumber     string    `json:"addressNumber" bson:"addressNumber,omitempty"`
 	AddressComplement string    `json:"addressComplement" bson:"addressComplement,omitempty"`
+	WorkNow           bool      `json:"workNow" bson:"workNow,omitempty"`
 }
